@@ -9,12 +9,16 @@ const signToken = (user) => {
 
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ success: false, message: 'Missing fields' });
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ success: false, message: 'Email already exists' });
+    const { name, email, password, role } = req.body;
+    if (role && role !== 'CUSTOMER') {
+      return res.status(403).json({ success: false, message: 'Nhân viên không được tự đăng ký. Liên hệ quản trị viên.' });
+    }
+    if (!name || !email || !password) return res.status(400).json({ success: false, message: 'Thiếu họ tên, email hoặc mật khẩu' });
+    if (String(password).length < 6) return res.status(400).json({ success: false, message: 'Mật khẩu tối thiểu 6 ký tự' });
+    const exists = await User.findOne({ email: String(email).toLowerCase().trim() });
+    if (exists) return res.status(400).json({ success: false, message: 'Email đã được sử dụng' });
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashed });
+    const user = await User.create({ name: name.trim(), email: String(email).toLowerCase().trim(), password: hashed, role: 'CUSTOMER' });
     const token = signToken(user);
     res.json({ success: true, data: { token, user: { id: user._id, email: user.email, name: user.name, role: user.role } } });
   } catch (err) { next(err); }

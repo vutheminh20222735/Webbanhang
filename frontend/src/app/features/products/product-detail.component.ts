@@ -22,14 +22,24 @@ import { AuthService } from '../../core/services/auth.service';
           <li>Bộ nhớ: {{product.storage}}</li>
           <li>Màu: {{product.color}}</li>
           <li>Màn hình: {{product.screen}}</li>
+          <li>Chip: {{product.cpu}}</li>
+          <li>Camera: {{product.camera}}</li>
           <li>Pin: {{product.battery}}</li>
+          <li>Hệ điều hành: {{product.operatingSystem}}</li>
         </ul>
         <div class="price-row">
           <strong>{{product.salePrice || product.price | number}}₫</strong>
           <s *ngIf="product.salePrice">{{product.price | number}}₫</s>
         </div>
         <p class="stock">Còn {{product.stock}} máy</p>
-        <button class="btn-primary" (click)="addToCart()">Thêm vào giỏ</button>
+        <label class="qty-label">Số lượng
+          <input type="number" [(ngModel)]="qty" min="1" [max]="product.stock" />
+        </label>
+        <div class="buy-row sticky-buy">
+          <button class="btn-outline" (click)="addToCart()">Thêm vào giỏ</button>
+          <button class="btn-primary" (click)="buyNow()">Mua ngay</button>
+        </div>
+        <p class="login-hint" *ngIf="!loggedIn">Cần <a [routerLink]="['/login']" [queryParams]="{returnUrl: currentUrl}">đăng nhập</a> hoặc <a routerLink="/register">đăng ký</a> để mua hàng.</p>
       </div>
     </div>
   `
@@ -37,20 +47,28 @@ import { AuthService } from '../../core/services/auth.service';
 export class ProductDetailComponent implements OnInit, AfterViewInit {
   product: any;
   id: string;
+  qty = 1;
   canReview = false;
   rating = 5;
   title = '';
   body = '';
   placeholder = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80';
   constructor(private route: ActivatedRoute, private router: Router, private ps: ProductService, private cart: CartService, private http: HttpClient, public auth: AuthService) {}
+  get loggedIn() { return !!this.auth.getToken(); }
+  get currentUrl() { return this.router.url; }
   ngOnInit() { this.id = this.route.snapshot.params['id']; this.ps.get(this.id).subscribe((res: any) => this.product = res.data); }
+  requireLogin(): boolean {
+    if (this.auth.getToken()) return true;
+    this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+    return false;
+  }
   addToCart() {
-    if (!this.auth.getToken()) { this.router.navigate(['/login']); return; }
-    this.cart.add(this.id, 1).subscribe(() => this.router.navigate(['/cart']), () => alert('Không thêm được vào giỏ'));
+    if (!this.requireLogin()) return;
+    this.cart.add(this.id, this.qty).subscribe(() => this.router.navigate(['/cart']), () => alert('Không thêm được vào giỏ'));
+  }
+  buyNow() {
+    if (!this.requireLogin()) return;
+    this.cart.add(this.id, this.qty).subscribe(() => this.router.navigate(['/checkout']), () => alert('Không mua được, thử lại'));
   }
   ngAfterViewInit() { if (this.auth.getToken()) this.http.get(`${environment.apiUrl}/reviews/can-review/${this.id}`).subscribe((res: any) => this.canReview = !!res.data); }
-  submitReview() {
-    if (!this.auth.getToken()) return alert('Cần đăng nhập');
-    this.http.post(`${environment.apiUrl}/reviews`, { product: this.id, rating: this.rating, title: this.title, body: this.body }).subscribe(() => { alert('Đã gửi đánh giá'); this.canReview = false; }, () => alert('Gửi đánh giá thất bại'));
-  }
 }

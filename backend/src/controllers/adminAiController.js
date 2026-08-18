@@ -6,7 +6,7 @@ exports.adminChat = async (req, res, next) => {
     if (!message) return res.status(400).json({ success: false, message: 'No message' });
     // ensure role check done at route
     const role = req.user.role;
-    const result = await aiService.chat({ id: req.user.id, role }, message);
+    const result = await aiService.chat({ id: req.user.id, role }, message, { admin: true });
     res.json({ success: true, data: result });
   } catch (err) { next(err); }
 };

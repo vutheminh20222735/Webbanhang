@@ -9,7 +9,7 @@ export class RoleGuard implements CanActivate {
     const allowed: string[] = route.data['roles'] || [];
     const permission: string = route.data['permission'];
     const token = this.auth.getToken();
-    if (!token) { this.router.navigate(['/auth/login']); return false; }
+    if (!token) { this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } }); return false; }
     const payload = this.auth.getUserFromToken();
     if (!payload) { this.router.navigate(['/403']); return false; }
     // check role

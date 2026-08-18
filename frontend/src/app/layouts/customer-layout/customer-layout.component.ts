@@ -8,14 +8,19 @@ import { AuthService } from '../../core/services/auth.service';
     <header class="shop-header">
       <div class="shop-header-inner">
         <a routerLink="/" class="logo">Phone<span>Shop</span></a>
-        <nav class="shop-nav">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Điện thoại</a>
-          <a routerLink="/cart">Giỏ hàng</a>
-          <a routerLink="/orders">Đơn hàng</a>
-          <a *ngIf="isStaff" routerLink="/admin">Quản trị</a>
+        <button class="menu-toggle" type="button" (click)="menuOpen = !menuOpen" [attr.aria-expanded]="menuOpen">☰</button>
+        <nav class="shop-nav" [class.open]="menuOpen">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Điện thoại</a>
+          <a routerLink="/cart" (click)="closeMenu()">Giỏ hàng</a>
+          <a routerLink="/orders" (click)="closeMenu()">Đơn hàng</a>
+          <a *ngIf="isStaff" routerLink="/admin" (click)="closeMenu()">Quản trị</a>
+          <a *ngIf="!loggedIn" routerLink="/login" class="nav-auth" (click)="closeMenu()">Đăng nhập</a>
+          <a *ngIf="!loggedIn" routerLink="/register" class="nav-auth" (click)="closeMenu()">Đăng ký</a>
+          <button *ngIf="loggedIn" class="btn-ghost" (click)="logout()">Đăng xuất</button>
         </nav>
-        <div class="shop-actions">
+        <div class="shop-actions desktop-only">
           <a *ngIf="!loggedIn" routerLink="/login" class="btn-ghost">Đăng nhập</a>
+          <a *ngIf="!loggedIn" routerLink="/register" class="btn-primary header-cta">Đăng ký</a>
           <button *ngIf="loggedIn" class="btn-ghost" (click)="logout()">Đăng xuất</button>
         </div>
       </div>
@@ -31,8 +36,10 @@ import { AuthService } from '../../core/services/auth.service';
   `
 })
 export class CustomerLayoutComponent {
+  menuOpen = false;
   constructor(public auth: AuthService, private router: Router) {}
   get loggedIn() { return !!this.auth.getToken(); }
   get isStaff() { return this.auth.hasRole('ADMIN', 'MANAGER', 'STAFF'); }
-  logout() { this.auth.logout(); this.router.navigate(['/']); }
+  closeMenu() { this.menuOpen = false; }
+  logout() { this.auth.logout(); this.closeMenu(); this.router.navigate(['/']); }
 }

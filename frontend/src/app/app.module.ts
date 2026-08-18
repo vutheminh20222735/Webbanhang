@@ -9,6 +9,7 @@ import { ForbiddenComponent } from './core/components/forbidden.component';
 import { ChatbotComponent } from './core/components/chatbot/chatbot.component';
 import { RouterModule, Routes } from '@angular/router';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
   {
@@ -16,15 +17,17 @@ const routes: Routes = [
     component: CustomerLayoutComponent,
     children: [
       { path: '', loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule) },
-      { path: 'cart', loadChildren: () => import('./features/cart/cart.module').then(m => m.CartModule) },
-      { path: 'checkout', loadChildren: () => import('./features/checkout/checkout.module').then(m => m.CheckoutModule) },
-      { path: 'orders', loadChildren: () => import('./features/orders/orders.module').then(m => m.OrdersModule) },
-      { path: 'account', loadChildren: () => import('./features/account/account.module').then(m => m.AccountModule) },
-      { path: 'login', loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule) }
+      { path: 'cart', canActivate: [AuthGuard], loadChildren: () => import('./features/cart/cart.module').then(m => m.CartModule) },
+      { path: 'checkout', canActivate: [AuthGuard], loadChildren: () => import('./features/checkout/checkout.module').then(m => m.CheckoutModule) },
+      { path: 'orders', canActivate: [AuthGuard], loadChildren: () => import('./features/orders/orders.module').then(m => m.OrdersModule) },
+      { path: 'account', canActivate: [AuthGuard], loadChildren: () => import('./features/account/account.module').then(m => m.AccountModule) },
+      { path: 'login', loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule) },
+      { path: 'register', loadChildren: () => import('./features/auth/register.module').then(m => m.RegisterModule) }
     ]
   },
   {
     path: 'admin',
+    canActivate: [AuthGuard],
     component: AdminLayoutComponent,
     children: [
       { path: '', loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule) }
