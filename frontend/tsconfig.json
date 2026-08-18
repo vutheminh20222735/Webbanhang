@@ -14,7 +14,9 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
-    "lib": ["es2020", "dom"]
+    "lib": ["es2020", "dom"],
+    "rootDir": "./src",
+    "ignoreDeprecations": "6.0"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -3,9 +3,11 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
+
 @Component({
   templateUrl: './reviews.component.html',
   styleUrls: ['./reviews.component.scss']
+  
 })
 export class ReviewsComponent implements OnInit {
   Math = Math;
