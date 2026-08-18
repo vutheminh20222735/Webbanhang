@@ -1,0 +1,600 @@
+:host {
+  display: block;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.checkout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.checkout-header {
+  text-align: center;
+  margin-bottom: 32px;
+  animation: slideDown 0.6s ease-out;
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    color: #1f2937;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #6b7280;
+    font-size: 16px;
+  }
+}
+
+/* Alert Messages */
+.alert {
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-weight: 500;
+  animation: slideDown 0.4s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &.success {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+    border-left: 4px solid #16a34a;
+
+    &::before {
+      content: '✓';
+      font-weight: bold;
+      font-size: 18px;
+    }
+  }
+
+  &.error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+
+    &::before {
+      content: '✕';
+      font-weight: bold;
+      font-size: 18px;
+    }
+  }
+}
+
+.checkout-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  animation: fadeIn 0.6s ease-out;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Order Summary */
+.order-summary {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  h2 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    color: #1f2937;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.summary-items {
+  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+
+    &:hover {
+      background: #9ca3af;
+    }
+  }
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f9fafb;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+
+  &:hover {
+    background: #f0f9ff;
+    border-color: #0ea5e9;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.item-visual {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  align-items: center;
+}
+
+.product-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-detail {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #6b7280;
+
+  .qty {
+    display: flex;
+    gap: 4px;
+  }
+
+  .price {
+    font-weight: 600;
+    color: #2563eb;
+  }
+}
+
+.item-total {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 15px;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Coupon Section */
+.coupon-section {
+  background: #f0f9ff;
+  border: 2px dashed #0ea5e9;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #0c4a6e;
+    font-weight: 600;
+  }
+}
+
+.coupon-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.coupon-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #fff;
+
+  &:focus {
+    outline: none;
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+  }
+
+  &:disabled {
+    background: #e0f2fe;
+    cursor: not-allowed;
+  }
+}
+
+.btn-coupon {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.coupon-applied {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #d1fae5;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+}
+
+.coupon-badge {
+  font-weight: 600;
+  color: #065f46;
+  font-size: 14px;
+}
+
+.remove-coupon {
+  background: none;
+  border: none;
+  color: #065f46;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+/* Price Breakdown */
+.price-breakdown {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #4b5563;
+
+  span:last-child {
+    font-weight: 600;
+    color: #1f2937;
+  }
+}
+
+.breakdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 12px 0;
+}
+
+.breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.05));
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+
+  .total-amount {
+    color: #2563eb;
+    font-size: 20px;
+  }
+}
+
+/* Checkout Form */
+.checkout-form {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.6s ease-out;
+
+  h2 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    color: #1f2937;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.form-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    color: #1f2937;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: #2563eb;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    &:hover {
+      border-color: #d1d5db;
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+
+    option {
+      background: #fff;
+      color: #1f2937;
+    }
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-element {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+
+  &:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  }
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px 20px;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  border: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #9ca3af;
+  }
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  :host {
+    padding: 12px;
+  }
+
+  .checkout-header h1 {
+    font-size: 24px;
+  }
+
+  .checkout-content {
+    gap: 16px;
+  }
+
+  .order-summary {
+    position: static;
+    margin-bottom: 16px;
+  }
+
+  .checkout-form {
+    padding: 16px;
+  }
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+input,
+select {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  &:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.card-element {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #2563eb;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  margin-top: 16px;
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}

@@ -9,6 +9,6 @@ export class CartService {
   add(productId: string, quantity = 1, color?: string, storage?: string) { return this.http.post(`${environment.apiUrl}/cart/add`, { productId, quantity, color, storage }); }
   update(itemId: string, quantity: number) { return this.http.put(`${environment.apiUrl}/cart/item`, { itemId, quantity }); }
   remove(itemId: string) { return this.http.delete(`${environment.apiUrl}/cart/item/${itemId}`); }
-  applyCoupon(code: string) { return this.http.post(`${environment.apiUrl}/cart/coupon`, { code }); }
+  applyCoupon(code: string) { return this.http.post(`${environment.apiUrl}/coupons/apply`, { code }); }
   checkout(payload: any) { return this.http.post(`${environment.apiUrl}/cart/checkout`, payload); }
 }

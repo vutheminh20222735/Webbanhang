@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { CustomerLayoutComponent } from './layouts/customer-layout/customer-layout.component';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
@@ -39,7 +40,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent],
-  imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, RouterModule.forRoot(routes)],
+  imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, FormsModule, RouterModule.forRoot(routes)],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })

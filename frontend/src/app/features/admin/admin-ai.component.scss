@@ -1,0 +1,61 @@
+:host {
+  display: block;
+}
+
+.ai-box {
+  display: block;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  min-height: 220px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.messages .user {
+  align-self: flex-end;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 12px 12px 2px 12px;
+  padding: 8px 10px;
+  max-width: 85%;
+}
+
+.messages .bot {
+  align-self: flex-start;
+  background: #eef2ff;
+  border-radius: 12px 12px 12px 2px;
+  padding: 8px 10px;
+  max-width: 85%;
+}
+
+.ai-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ai-form input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 12px;
+}
+
+.ai-form .btn-primary {
+  margin: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.ai-form .btn-primary:hover {
+  background: #1d4ed8;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+}

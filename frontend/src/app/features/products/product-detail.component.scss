@@ -1,0 +1,151 @@
+:host {
+  display: block;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #2563eb;
+  min-height: 40px;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.detail-media {
+  background: #eef2ff;
+  border-radius: 12px;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.detail-media img {
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+}
+
+.brand {
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.specs {
+  padding-left: 18px;
+  color: #334155;
+}
+
+.price-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.price-row strong {
+  color: #dc2626;
+  font-size: 16px;
+}
+
+.price-row s {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.stock {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.qty-label {
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.qty-label input {
+  width: 80px;
+  margin-left: 8px;
+  padding: 10px;
+  border: 1px solid #dbe3f0;
+  border-radius: 8px;
+}
+
+.buy-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-outline,
+.btn-primary {
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-outline {
+  background: #fff;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+}
+
+.btn-outline:hover {
+  background: #eff6ff;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: 0;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+}
+
+.login-hint {
+  margin-top: 12px;
+  color: #b45309;
+  font-size: 14px;
+}
+
+.login-hint a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+}

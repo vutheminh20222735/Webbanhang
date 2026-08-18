@@ -1,0 +1,253 @@
+<div class="admin-orders-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>📋 Quản Lý Đơn Hàng</h1>
+      <p class="subtitle">Quản lý và theo dõi tất cả đơn hàng</p>
+    </div>
+    <button class="btn-refresh" (click)="load()" title="Làm mới dữ liệu">
+      🔄 Làm mới
+    </button>
+  </div>
+
+  <!-- Alert Message -->
+  <div class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="!isLoading">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-content">
+        <div class="stat-label">Tổng đơn hàng</div>
+        <div class="stat-value">{{ orders.length }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <div class="stat-label">Chờ xác nhận</div>
+        <div class="stat-value">{{ (orders | filter:{ orderStatus: 'pending' }).length }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✓</div>
+      <div class="stat-content">
+        <div class="stat-label">Đã giao</div>
+        <div class="stat-value">{{ (orders | filter:{ orderStatus: 'delivered' }).length }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✕</div>
+      <div class="stat-content">
+        <div class="stat-label">Đã hủy</div>
+        <div class="stat-value">{{ (orders | filter:{ orderStatus: 'canceled' }).length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="filter-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilters()" 
+        placeholder="🔍 Tìm theo mã đơn, tên khách, số điện thoại..." 
+        class="search-input"
+      />
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="status-filter">Trạng thái:</label>
+        <select id="status-filter" [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">📊 Tất cả</option>
+          <option *ngFor="let s of statuses" [value]="s">
+            {{ getStatusLabel(s) }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="orders-table-wrapper" *ngIf="!isLoading">
+    <div class="table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th class="col-code">Mã Đơn</th>
+            <th class="col-customer">Khách Hàng</th>
+            <th class="col-phone">Số Điện Thoại</th>
+            <th class="col-date">Ngày Đặt</th>
+            <th class="col-amount">Tổng Tiền</th>
+            <th class="col-status">Trạng Thái</th>
+            <th class="col-action">Hành Động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of orders" class="order-row" [class.archived]="o.orderStatus === 'canceled'">
+            <td class="col-code">
+              <span class="order-code">{{ o.orderCode || o._id }}</span>
+            </td>
+            <td class="col-customer">
+              <div class="customer-info">
+                <span class="name">{{ o.shippingAddress?.name || o.user?.email || 'N/A' }}</span>
+              </div>
+            </td>
+            <td class="col-phone">{{ o.shippingAddress?.phone || 'N/A' }}</td>
+            <td class="col-date">
+              <div class="date-time">
+                <span class="date">{{ o.createdAt | date: 'dd/MM/yyyy' }}</span>
+                <span class="time">{{ o.createdAt | date: 'HH:mm' }}</span>
+              </div>
+            </td>
+            <td class="col-amount">
+              <strong class="price">{{ o.total | number }}₫</strong>
+            </td>
+            <td class="col-status">
+              <span class="status-badge" [class]="'status-' + (o.orderStatus || 'pending')" 
+                    [style.backgroundColor]="getStatusColor(o.orderStatus)">
+                {{ getStatusLabel(o.orderStatus) }}
+              </span>
+            </td>
+            <td class="col-action">
+              <button class="btn-view" (click)="selectOrder(o)" title="Xem chi tiết">
+                👁️ Xem
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" *ngIf="orders.length === 0">
+      <div class="empty-icon">📭</div>
+      <p>Không có đơn hàng nào khớp với tiêu chí tìm kiếm.</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" *ngIf="selectedOrder" [@fadeInOut] (click)="closeDetail()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2>📦 Chi Tiết Đơn Hàng</h2>
+          <span class="order-badge">{{ selectedOrder.orderCode || selectedOrder._id }}</span>
+        </div>
+        <button class="btn-close" (click)="closeDetail()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Order Info -->
+        <div class="detail-section">
+          <h3>Thông Tin Đơn Hàng</h3>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <span class="label">Mã đơn</span>
+              <span class="value font-mono">{{ selectedOrder.orderCode || selectedOrder._id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Ngày đặt</span>
+              <span class="value">{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Trạng thái</span>
+              <span class="value">
+                <span class="status-badge" [class]="'status-' + (selectedOrder.orderStatus || 'pending')"
+                      [style.backgroundColor]="getStatusColor(selectedOrder.orderStatus)">
+                  {{ getStatusLabel(selectedOrder.orderStatus) }}
+                </span>
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Phương thức thanh toán</span>
+              <span class="value">{{ selectedOrder.paymentMethod === 'CARD' ? '💳 Thẻ tín dụng' : '💵 Tiền mặt (COD)' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="detail-section">
+          <h3>Thông Tin Khách Hàng</h3>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <span class="label">Họ tên</span>
+              <span class="value">{{ selectedOrder.shippingAddress?.name || 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Email</span>
+              <span class="value">{{ selectedOrder.shippingAddress?.email || selectedOrder.user?.email || 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Số điện thoại</span>
+              <span class="value">{{ selectedOrder.shippingAddress?.phone || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="detail-section">
+          <h3>📍 Địa Chỉ Giao Hàng</h3>
+          <div class="address-box">
+            <p>{{ selectedOrder.shippingAddress?.line1 || 'N/A' }}</p>
+            <p>{{ selectedOrder.shippingAddress?.district || 'N/A' }}, {{ selectedOrder.shippingAddress?.city || 'N/A' }}</p>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="detail-section">
+          <h3>Sản Phẩm</h3>
+          <div class="items-table">
+            <div class="item-header">
+              <span class="item-name">Tên Sản Phẩm</span>
+              <span class="item-qty">SL</span>
+              <span class="item-price">Giá</span>
+              <span class="item-total">Tổng</span>
+            </div>
+            <div class="item-row" *ngFor="let item of selectedOrder.items || []">
+              <span class="item-name">{{ item.productId?.name || item.name }}</span>
+              <span class="item-qty">{{ item.quantity }}</span>
+              <span class="item-price">{{ item.price | number }}₫</span>
+              <span class="item-total">{{ (item.price * item.quantity) | number }}₫</span>
+            </div>
+            <div class="item-footer">
+              <span>Tổng thanh toán:</span>
+              <strong>{{ selectedOrder.total | number }}₫</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Management -->
+        <div class="detail-section">
+          <h3>📊 Cập Nhật Trạng Thái</h3>
+          <div class="status-actions">
+            <button
+              class="btn-status"
+              *ngFor="let nextStatus of getNextStatuses(selectedOrder.orderStatus)"
+              (click)="updateOrderStatus(selectedOrder, nextStatus)"
+              [disabled]="isUpdating"
+            >
+              → {{ getStatusLabel(nextStatus) }}
+            </button>
+            <div class="hint" *ngIf="getNextStatuses(selectedOrder.orderStatus).length === 0">
+              ✓ Không thể chuyển trạng thái từ trạng thái hiện tại.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeDetail()">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+       

@@ -2,19 +2,8 @@ import { Component } from '@angular/core';
 import { AiService } from '../../core/services/ai.service';
 
 @Component({
-  template: `
-    <div class="admin-card ai-box">
-      <h3>Trợ lý AI quản trị</h3>
-      <p class="muted">Hỏi doanh thu, đơn hôm nay, sản phẩm bán chạy, hàng sắp hết...</p>
-      <div class="messages admin-messages">
-        <div *ngFor="let m of messages" [class.user]="m.role==='user'" [class.bot]="m.role!=='user'">{{m.text}}</div>
-      </div>
-      <form class="ai-form" (submit)="send($event)">
-        <input name="q" placeholder="Ví dụ: Doanh thu tháng này?" />
-        <button class="btn-primary" type="submit">Gửi</button>
-      </form>
-    </div>
-  `
+  templateUrl: './admin-ai.component.html',
+  styleUrls: ['./admin-ai.component.scss']
 })
 export class AdminAiComponent {
   messages: any[] = [{ role: 'assistant', text: 'Xin chào, tôi có thể giúp báo cáo cửa hàng.' }];

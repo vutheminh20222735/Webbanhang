@@ -1,0 +1,29 @@
+<div class="admin-two">
+  <div class="admin-card">
+    <h3>Cấp tài khoản nhân viên</h3>
+    <p class="muted">Nhân viên không tự đăng ký được. Chỉ admin tạo tài khoản STAFF/MANAGER.</p>
+    <form (submit)="create($event)">
+      <input name="name" placeholder="Họ tên" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Mật khẩu" required minlength="6" />
+      <select name="role">
+        <option value="STAFF">Nhân viên (STAFF)</option>
+        <option value="MANAGER">Quản lý (MANAGER)</option>
+      </select>
+      <p class="error" *ngIf="error">{{error}}</p>
+      <p class="ok" *ngIf="ok">{{ok}}</p>
+      <button class="btn-primary" type="submit">Tạo tài khoản</button>
+    </form>
+  </div>
+  <div class="admin-card">
+    <h3>Danh sách tài khoản ({{total}})</h3>
+    <table class="admin-table">
+      <tr><th>Tên</th><th>Email</th><th>Vai trò</th></tr>
+      <tr *ngFor="let u of users">
+        <td>{{u.name}}</td>
+        <td>{{u.email}}</td>
+        <td><span class="badge">{{u.role}}</span></td>
+      </tr>
+    </table>
+  </div>
+</div>

@@ -4,54 +4,8 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
-  template: `
-    <div class="admin-card" *ngIf="canCreate">
-      <h3>Thêm điện thoại</h3>
-      <p class="muted">Chỉ Admin và Manager được thêm sản phẩm.</p>
-      <form class="product-form" (submit)="create($event)">
-        <div class="form-grid">
-          <input name="name" placeholder="Tên máy (vd: iPhone 16 128GB)" required />
-          <input name="brand" placeholder="Hãng (Apple, Samsung...)" required />
-          <input name="price" type="number" placeholder="Giá (VNĐ)" required />
-          <input name="salePrice" type="number" placeholder="Giá khuyến mãi (tuỳ chọn)" />
-          <input name="stock" type="number" placeholder="Tồn kho" value="10" />
-          <select name="category">
-            <option value="">-- Loại --</option>
-            <option *ngFor="let c of categories" [value]="c._id">{{c.name}}</option>
-          </select>
-          <input name="ram" placeholder="RAM (8GB)" />
-          <input name="storage" placeholder="Bộ nhớ (256GB)" />
-          <input name="color" placeholder="Màu" />
-          <input name="screen" placeholder="Màn hình" />
-          <input name="cpu" placeholder="Chip" />
-          <input name="camera" placeholder="Camera" />
-          <input name="battery" placeholder="Pin" />
-          <input name="operatingSystem" placeholder="Hệ điều hành" />
-        </div>
-        <input name="imageUrl" placeholder="Link ảnh (https://...)" />
-        <textarea name="description" placeholder="Mô tả sản phẩm" rows="3"></textarea>
-        <p class="error" *ngIf="error">{{error}}</p>
-        <p class="ok" *ngIf="ok">{{ok}}</p>
-        <button class="btn-primary" type="submit">Thêm điện thoại</button>
-      </form>
-    </div>
-    <div class="admin-card">
-      <h3>Sản phẩm</h3>
-      <table class="admin-table">
-        <tr><th>Tên</th><th>Hãng</th><th>Giá</th><th>Tồn</th><th></th></tr>
-        <tr *ngFor="let p of products">
-          <td>{{p.name}}</td>
-          <td>{{p.brand}}</td>
-          <td><input class="mini" [(ngModel)]="p.price" /></td>
-          <td><input class="mini" [(ngModel)]="p.stock" /></td>
-          <td>
-            <button class="btn-ghost-dark" (click)="save(p)" *ngIf="canCreate">Lưu</button>
-            <button class="btn-ghost-dark" (click)="del(p)" *ngIf="auth.hasRole('ADMIN')">Xóa</button>
-          </td>
-        </tr>
-      </table>
-    </div>
-  `
+  templateUrl: './admin-products.component.html',
+  styleUrls: ['./admin-products.component.scss']
 })
 export class AdminProductsComponent implements OnInit {
   products: any[] = [];

@@ -16,6 +16,9 @@ import { AuthService } from '../../core/services/auth.service';
           <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Tổng quan</a>
           <a routerLink="/admin/products" routerLinkActive="active" (click)="closeMenu()">Sản phẩm</a>
           <a routerLink="/admin/orders" routerLinkActive="active" (click)="closeMenu()">Đơn hàng</a>
+          <a *ngIf="isAdmin" routerLink="/admin/coupons" routerLinkActive="active" (click)="closeMenu()">
+  Mã giảm giá
+</a>
           <a *ngIf="isAdmin" routerLink="/admin/users" routerLinkActive="active" (click)="closeMenu()">Nhân viên</a>
           <a *ngIf="canAi" routerLink="/admin/ai" routerLinkActive="active" (click)="closeMenu()">Trợ lý AI</a>
           <a routerLink="/" class="side-store" (click)="closeMenu()">← Về cửa hàng</a>

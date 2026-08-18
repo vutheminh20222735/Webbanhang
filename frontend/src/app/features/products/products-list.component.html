@@ -1,0 +1,99 @@
+<section class="hero">
+  <div>
+    <p class="eyebrow">Cửa hàng điện thoại</p>
+    <h1>Điện thoại chính hãng, giá tốt mỗi ngày</h1>
+    <p>iPhone, Samsung, Xiaomi, OPPO — bảo hành 12 tháng, giao hàng toàn quốc.</p>
+  </div>
+</section>
+
+<div class="products-page">
+  <!-- Filter Sidebar -->
+  <aside class="filter-sidebar">
+    <div class="filter-header">
+      <h3>Lọc sản phẩm</h3>
+      <button class="btn-clear" (click)="clearFilters()" *ngIf="selectedCategory || selectedBrand || sortBy !== 'newest'">
+        Xóa lọc
+      </button>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="filter-group">
+      <label class="filter-title">Danh mục</label>
+      <div class="filter-options">
+        <label class="filter-option" *ngFor="let cat of categories">
+          <input type="radio" name="category" [value]="cat" (change)="selectedCategory = cat; applyFilters()" [checked]="selectedCategory === cat" />
+          <span>{{ cat }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Brand Filter -->
+    <div class="filter-group">
+      <label class="filter-title">Hãng</label>
+      <div class="filter-options">
+        <label class="filter-option" *ngFor="let brand of brands">
+          <input type="checkbox" [value]="brand" (change)="selectedBrand = $any($event.target).checked ? brand : ''; applyFilters()" [checked]="selectedBrand === brand" />
+          <span>{{ brand }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Price Filter -->
+    <div class="filter-group">
+      <label class="filter-title">Giá</label>
+      <div class="filter-price">
+        <div class="price-input">
+          <label>Từ</label>
+          <input type="number" [(ngModel)]="priceRange.min" (change)="onPriceChange()" />
+        </div>
+        <div class="price-input">
+          <label>Đến</label>
+          <input type="number" [(ngModel)]="priceRange.max" (change)="onPriceChange()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Sort Filter -->
+    <div class="filter-group">
+      <label class="filter-title">Sắp xếp</label>
+      <select [(ngModel)]="sortBy" (change)="onSortChange()">
+        <option value="newest">Mới nhất</option>
+        <option value="price-asc">Giá thấp đến cao</option>
+        <option value="price-desc">Giá cao đến thấp</option>
+        <option value="name">Theo tên (A-Z)</option>
+      </select>
+    </div>
+  </aside>
+
+  <!-- Products Section -->
+  <main class="products-main">
+    <h2 class="section-title">Sản phẩm ( {{ products.length }} kết quả )</h2>
+
+    <div class="product-grid" *ngIf="products.length; else empty">
+      <a class="product-card" *ngFor="let p of products" [routerLink]="['/product', p._id]">
+        <div class="thumb">
+          <img [src]="p.images?.[0] || placeholder" [alt]="p.name" />
+        </div>
+        <div class="info">
+          <span class="brand">{{ p.brand }}</span>
+          <h3>{{ p.name }}</h3>
+          <p class="spec">{{ p.ram }} · {{ p.storage }} · {{ p.color }}</p>
+          <div class="price-row">
+            <strong>{{ (p.salePrice || p.price) | number }}₫</strong>
+            <s *ngIf="p.salePrice">{{ p.price | number }}₫</s>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <ng-template #empty>
+      <div class="empty-state">
+        <p class="muted">Không tìm thấy sản phẩm phù hợp với bộ lọc.</p>
+        <button class="btn-secondary" (click)="clearFilters()">Xóa lọc</button>
+      </div>
+    </ng-template>
+
+    <div class="loading" *ngIf="isLoading">Đang tải...</div>
+  </main>
+</div>
+
