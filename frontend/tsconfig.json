@@ -4,19 +4,17 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler", // 🌟 SỬA THÀNH BUNDLER (Chuẩn cho Angular mới)
     "importHelpers": true,
-    "target": "es2020",
+    "target": "ES2022",            // 🌟 NÂNG LÊN ES2022 để khớp cấu hình Angular CLI
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "lib": ["es2020", "dom"],
-    "rootDir": "./src",
-    "ignoreDeprecations": "6.0"
+    "rootDir": "./src"             // 🌟 GIỮ NGUYÊN để không bị lỗi cấu hình thư mục gốc
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
