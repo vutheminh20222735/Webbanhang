@@ -5,6 +5,6 @@ import { ProfileComponent } from './profile.component';
 
 @NgModule({
   declarations: [ProfileComponent],
-  imports: [CommonModule, RouterModule.forChild([{ path: 'account/profile', component: ProfileComponent }])]
+  imports: [CommonModule, RouterModule.forChild([{ path: '', component: ProfileComponent }])]
 })
 export class AccountModule {}

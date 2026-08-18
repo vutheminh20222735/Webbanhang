@@ -7,18 +7,18 @@ import { environment } from '../../../environments/environment';
 
 @Component({
   template: `
-    <h2>Checkout</h2>
-    <form (submit)="onCheckout($event)">
-      <input name="name" placeholder="Full name" required />
-      <input name="line1" placeholder="Address line 1" required />
-      <label>Payment
+    <h1>Thanh toán</h1>
+    <form class="auth-card" (submit)="onCheckout($event)">
+      <input name="name" placeholder="Họ tên" required />
+      <input name="line1" placeholder="Địa chỉ nhận hàng" required />
+      <label>Thanh toán
         <select name="payment">
-          <option value="COD">Cash on Delivery</option>
-          <option value="CARD">Card (Stripe)</option>
+          <option value="COD">Tiền mặt khi nhận hàng</option>
+          <option value="CARD">Thẻ (Stripe)</option>
         </select>
       </label>
-      <div id="card-element" style="margin-top:12px"></div>
-      <button>Place order</button>
+      <div id="card-element"></div>
+      <button class="btn-primary" type="submit">Đặt hàng</button>
     </form>
   `
 })

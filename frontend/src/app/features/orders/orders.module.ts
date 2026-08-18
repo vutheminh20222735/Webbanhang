@@ -5,6 +5,6 @@ import { OrdersComponent } from './orders.component';
 
 @NgModule({
   declarations: [OrdersComponent],
-  imports: [CommonModule, RouterModule.forChild([{ path: 'orders', component: OrdersComponent }])]
+  imports: [CommonModule, RouterModule.forChild([{ path: '', component: OrdersComponent }])]
 })
 export class OrdersModule {}

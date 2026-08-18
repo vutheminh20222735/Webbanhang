@@ -5,6 +5,6 @@ import { LoginComponent } from './login.component';
 
 @NgModule({
   declarations: [LoginComponent],
-  imports: [CommonModule, RouterModule.forChild([{ path: 'auth/login', component: LoginComponent }])]
+  imports: [CommonModule, RouterModule.forChild([{ path: '', component: LoginComponent }])]
 })
 export class AuthModule {}

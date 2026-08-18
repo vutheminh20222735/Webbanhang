@@ -5,6 +5,6 @@ import { CheckoutComponent } from './checkout.component';
 
 @NgModule({
   declarations: [CheckoutComponent],
-  imports: [CommonModule, RouterModule.forChild([{ path: 'checkout', component: CheckoutComponent }])]
+  imports: [CommonModule, RouterModule.forChild([{ path: '', component: CheckoutComponent }])]
 })
 export class CheckoutModule {}
