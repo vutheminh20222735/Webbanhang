@@ -14,9 +14,9 @@ import { AuthService } from '../../core/services/auth.service';
           <a routerLink="/cart" (click)="closeMenu()">Giỏ hàng</a>
           <a routerLink="/orders" (click)="closeMenu()">Đơn hàng</a>
           <a *ngIf="isStaff" routerLink="/admin" (click)="closeMenu()">Quản trị</a>
-          <a *ngIf="!loggedIn" routerLink="/login" class="nav-auth" (click)="closeMenu()">Đăng nhập</a>
-          <a *ngIf="!loggedIn" routerLink="/register" class="nav-auth" (click)="closeMenu()">Đăng ký</a>
-          <button *ngIf="loggedIn" class="btn-ghost" (click)="logout()">Đăng xuất</button>
+          <a *ngIf="!loggedIn" routerLink="/login" class="nav-auth mobile-only" (click)="closeMenu()">Đăng nhập</a>
+          <a *ngIf="!loggedIn" routerLink="/register" class="nav-auth mobile-only" (click)="closeMenu()">Đăng ký</a>
+          <button *ngIf="loggedIn" class="btn-ghost mobile-only" (click)="logout()">Đăng xuất</button>
         </nav>
         <div class="shop-actions desktop-only">
           <a *ngIf="!loggedIn" routerLink="/login" class="btn-ghost">Đăng nhập</a>

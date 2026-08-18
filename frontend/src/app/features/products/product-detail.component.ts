@@ -9,6 +9,8 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   template: `
     <a routerLink="/" class="back-link">← Tất cả điện thoại</a>
+    <p class="muted" *ngIf="loading">Đang tải thông tin máy...</p>
+    <p class="error" *ngIf="error">{{error}}</p>
     <div class="detail" *ngIf="product">
       <div class="detail-media">
         <img [src]="product.images?.[0] || placeholder" [alt]="product.name" />
@@ -48,6 +50,8 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   product: any;
   id: string;
   qty = 1;
+  loading = true;
+  error = '';
   canReview = false;
   rating = 5;
   title = '';
@@ -56,7 +60,16 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   constructor(private route: ActivatedRoute, private router: Router, private ps: ProductService, private cart: CartService, private http: HttpClient, public auth: AuthService) {}
   get loggedIn() { return !!this.auth.getToken(); }
   get currentUrl() { return this.router.url; }
-  ngOnInit() { this.id = this.route.snapshot.params['id']; this.ps.get(this.id).subscribe((res: any) => this.product = res.data); }
+  ngOnInit() {
+    this.id = this.route.snapshot.params['id'];
+    this.ps.get(this.id).subscribe((res: any) => {
+      this.loading = false;
+      this.product = res.data;
+    }, err => {
+      this.loading = false;
+      this.error = err.error?.message || 'Không tải được thông tin điện thoại.';
+    });
+  }
   requireLogin(): boolean {
     if (this.auth.getToken()) return true;
     this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
