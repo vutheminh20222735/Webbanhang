@@ -7,6 +7,7 @@ const productController = require('../controllers/productController');
 
 // Public listing and details
 router.get('/', productController.listProducts);
+router.get('/categories', productController.listCategories);
 router.get('/:id', productController.getProduct);
 router.get('/:id/stock', requireAuth, productController.checkStock);
 

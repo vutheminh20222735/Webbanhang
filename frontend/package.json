@@ -6,7 +6,7 @@
     "node": "18.x"
   },
   "scripts": {
-    "start": "ng serve --open",
+    "start": "ng serve --open --proxy-config proxy.conf.json",
     "prebuild": "node scripts/set-env.js",
     "build": "ng build --configuration production",
     "lint": "ng lint",

@@ -13,8 +13,16 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 // apply stronger security middlewares (CSP, sanitize, xss)
 applySecurity(app);
-const clientOrigin = (process.env.CLIENT_URL || '*').replace(/\/$/, '');
-app.use(cors({ origin: clientOrigin }));
+const allowed = (process.env.CLIENT_URL || 'http://localhost:4200')
+  .split(',')
+  .map((s) => s.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowed.includes('*') || allowed.includes(origin)) return cb(null, true);
+    return cb(null, allowed[0] || true);
+  }
+}));
 app.use(express.json({ limit: '10mb' }));
 
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 120 });
