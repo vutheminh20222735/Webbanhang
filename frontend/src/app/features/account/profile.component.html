@@ -1,0 +1,112 @@
+<div class="profile-container">
+  <h1>Hồ sơ cá nhân</h1>
+
+  <!-- Message Alert -->
+  <div class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div class="profile-content" *ngIf="!isLoading">
+    <!-- User Info Section -->
+    <div class="info-card">
+      <div class="info-header">
+        <h2>Thông tin cá nhân</h2>
+        <button class="btn-secondary" (click)="toggleEdit()" *ngIf="!isEditing">
+          Chỉnh sửa
+        </button>
+      </div>
+
+      <div *ngIf="!isEditing" class="info-view">
+        <div class="info-row">
+          <span class="label">Họ tên</span>
+          <span class="value">{{ formData.name || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Email</span>
+          <span class="value">{{ formData.email || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Số điện thoại</span>
+          <span class="value">{{ formData.phone || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Địa chỉ</span>
+          <span class="value">{{ formData.address || '—' }}</span>
+        </div>
+      </div>
+
+      <form *ngIf="isEditing" class="info-form" (ngSubmit)="saveProfile()">
+        <div class="form-group">
+          <label for="name">Họ tên *</label>
+          <input id="name" type="text" [(ngModel)]="formData.name" name="name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input id="email" type="email" [(ngModel)]="formData.email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Số điện thoại</label>
+          <input id="phone" type="tel" [(ngModel)]="formData.phone" name="phone" />
+        </div>
+
+        <div class="form-group">
+          <label for="address">Địa chỉ</label>
+          <textarea id="address" [(ngModel)]="formData.address" name="address" rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="isSaving">
+            {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+          <button type="button" class="btn-secondary" (click)="toggleEdit()">
+            Hủy
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Password Change Section -->
+    <div class="info-card">
+      <div class="info-header">
+        <h2>Bảo mật</h2>
+        <button class="btn-secondary" (click)="showPasswordForm = !showPasswordForm" *ngIf="!showPasswordForm">
+          Đổi mật khẩu
+        </button>
+      </div>
+
+      <form *ngIf="showPasswordForm" class="password-form" (ngSubmit)="changePassword()">
+        <div class="form-group">
+          <label for="currentPassword">Mật khẩu hiện tại *</label>
+          <input id="currentPassword" type="password" [(ngModel)]="passwordForm.currentPassword" name="currentPassword" required />
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">Mật khẩu mới *</label>
+          <input id="newPassword" type="password" [(ngModel)]="passwordForm.newPassword" name="newPassword" required />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Xác nhận mật khẩu *</label>
+          <input id="confirmPassword" type="password" [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="isSaving">
+            {{ isSaving ? 'Đang xử lý...' : 'Đổi mật khẩu' }}
+          </button>
+          <button type="button" class="btn-secondary" (click)="showPasswordForm = false">
+            Hủy
+          </button>
+        </div>
+      </form>
+
+      <div *ngIf="!showPasswordForm" class="info-hint">
+        <p>Để bảo vệ tài khoản của bạn, hãy sử dụng mật khẩu mạnh và thay đổi định kỳ.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Đang tải...</div>
+

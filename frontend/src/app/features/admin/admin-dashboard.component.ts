@@ -1,83 +1,221 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import Chart from 'chart.js/auto';
 
 @Component({
-  template: `
-    <p class="muted" *ngIf="!canReport">Tài khoản nhân viên: xử lý đơn hàng và xem sản phẩm. Báo cáo chỉ dành cho quản trị/quản lý.</p>
-    <ng-container *ngIf="canReport">
-      <div class="kpi-grid">
-        <div class="kpi"><span>Doanh thu</span><strong>{{summary?.totalRevenue | number}}₫</strong></div>
-        <div class="kpi"><span>Đơn hàng</span><strong>{{summary?.totalOrders || 0}}</strong></div>
-        <div class="kpi"><span>Khách hàng</span><strong>{{summary?.totalCustomers || 0}}</strong></div>
-        <div class="kpi"><span>Sản phẩm</span><strong>{{summary?.totalProducts || 0}}</strong></div>
-      </div>
-      <div class="admin-card">
-        <h3>Doanh thu 30 ngày</h3>
-        <canvas id="revenueChart" height="120"></canvas>
-      </div>
-      <div class="admin-two">
-        <div class="admin-card">
-          <h3>Bán chạy</h3>
-          <table class="admin-table">
-            <tr><th>Sản phẩm</th><th>SL</th></tr>
-            <tr *ngFor="let p of topProducts"><td>{{p.name}}</td><td>{{p.qty}}</td></tr>
-          </table>
-        </div>
-        <div class="admin-card">
-          <h3>Sắp hết hàng</h3>
-          <table class="admin-table">
-            <tr><th>Sản phẩm</th><th>Tồn</th></tr>
-            <tr *ngFor="let l of lowStock"><td>{{l.name}}</td><td>{{l.stock}}</td></tr>
-          </table>
-        </div>
-      </div>
-      <div class="admin-card">
-        <button class="btn-ghost-dark" (click)="exportReport('top-products','csv')">Xuất CSV</button>
-        <button class="btn-ghost-dark" (click)="exportReport('top-products','excel')">Xuất Excel</button>
-        <button class="btn-ghost-dark" (click)="exportReport('revenue','pdf')">Xuất PDF</button>
-      </div>
-    </ng-container>
-  `
+  templateUrl: './admin-dashboard.component.html',
+  styleUrls: ['./admin-dashboard.component.scss']
 })
-export class AdminDashboardComponent implements AfterViewInit {
-  summary: any;
+export class AdminDashboardComponent implements OnInit, AfterViewInit {
+  isLoading = false;
+
+  // KPI Cards
+  totalRevenue = 0;
+  totalOrders = 0;
+  totalCustomers = 0;
+  totalProducts = 0;
+  successRate = 0;
+
+  // Today
+  todayRevenue = 0;
+  todayOrders = 0;
+
+  // Charts
+  revenueChart: any;
+  statusChart: any;
+
+  // Data
   topProducts: any[] = [];
   lowStock: any[] = [];
-  chart: any;
+  ordersByStatus: any[] = [];
+  categoryData: any[] = [];
+  revenueData: any[] = [];
+
+  // Time Range
+  selectedRange = '30days';
+
   constructor(private http: HttpClient, public auth: AuthService) {}
-  get canReport() { return this.auth.hasRole('ADMIN', 'MANAGER'); }
+
+  get canReport() {
+    return this.auth.hasRole('ADMIN', 'MANAGER');
+  }
+
+  ngOnInit() {
+    if (!this.canReport) return;
+    this.loadAllData();
+  }
+
   ngAfterViewInit() {
     if (!this.canReport) return;
-    this.loadSummary(); this.loadRevenue(); this.loadTopProducts(); this.loadLowStock();
+    setTimeout(() => {
+      this.renderCharts();
+    }, 100);
   }
-  loadSummary() { this.http.get(`${environment.apiUrl}/admin/reports/summary`).subscribe((res: any) => this.summary = res.data); }
-  loadRevenue() {
-    const to = new Date(); const from = new Date(); from.setDate(to.getDate() - 30);
-    this.http.get(`${environment.apiUrl}/admin/reports/revenue`, { params: { from: from.toISOString(), to: to.toISOString() } }).subscribe((res: any) => {
-      const data = res.data || [];
-      const labels = data.map((d: any) => d.date);
-      const totals = data.map((d: any) => d.total);
-      const el = document.getElementById('revenueChart') as HTMLCanvasElement;
-      if (!el) return;
-      const ctx = el.getContext('2d');
-      if (this.chart) this.chart.destroy();
-      this.chart = new Chart(ctx as any, { type: 'line', data: { labels, datasets: [{ label: 'Doanh thu', data: totals, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.15)', fill: true, tension: 0.3 }] } });
+
+  loadAllData() {
+    this.isLoading = true;
+    this.http
+      .get(`${environment.apiUrl}/admin/dashboard?range=${this.selectedRange}`)
+      .subscribe(
+        (res: any) => {
+          const data = res.data || {};
+
+          this.totalRevenue = data.totalRevenue || 0;
+          this.totalOrders = data.totalOrders || 0;
+          this.totalCustomers = data.totalCustomers || 0;
+          this.totalProducts = data.totalProducts || 0;
+          this.successRate = data.successRate || 0;
+          this.todayRevenue = data.todayRevenue || 0;
+          this.todayOrders = data.todayOrders || 0;
+
+          this.revenueData = data.revenueChart || [];
+          this.categoryData = data.categoryData || [];
+          this.topProducts = data.topProducts || [];
+          this.ordersByStatus = data.ordersByStatus || [];
+
+          this.isLoading = false;
+          this.renderCharts();
+        },
+        (err) => {
+          console.error('Failed to load dashboard', err);
+          this.isLoading = false;
+        }
+      );
+  }
+
+  renderCharts() {
+    this.renderRevenueChart();
+    this.renderStatusChart();
+  }
+
+  renderRevenueChart() {
+    const element = document.getElementById('revenueChart') as HTMLCanvasElement;
+    if (!element) return;
+
+    const labels = this.revenueData.map((d) => d.date || d.label);
+    const data = this.revenueData.map((d) => d.total || d.value);
+
+    if (this.revenueChart) this.revenueChart.destroy();
+
+    const ctx = element.getContext('2d');
+    this.revenueChart = new Chart(ctx as any, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Doanh thu (₫)',
+            data,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563eb'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              usePointStyle: true,
+              padding: 15
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: (value: any) => value.toLocaleString('vi-VN') + ' ₫'
+            }
+          }
+        }
+      }
     });
   }
-  loadTopProducts() { this.http.get(`${environment.apiUrl}/admin/reports/top-products`).subscribe((res: any) => this.topProducts = res.data || []); }
-  loadLowStock() { this.http.get(`${environment.apiUrl}/admin/reports/low-stock`).subscribe((res: any) => this.lowStock = res.data || []); }
-  exportReport(report: string, type: string) {
-    const url = `${environment.apiUrl}/admin/reports/export?report=${report}&type=${type}`;
-    this.http.get(url, { responseType: 'blob' as 'json' }).subscribe((blob: any) => {
-      const a = document.createElement('a');
-      const href = window.URL.createObjectURL(blob);
-      a.href = href;
-      a.download = `${report}.${type === 'excel' ? 'xlsx' : type === 'csv' ? 'csv' : 'pdf'}`;
-      a.click();
-      window.URL.revokeObjectURL(href);
-    }, () => alert('Xuất báo cáo thất bại'));
+
+  renderStatusChart() {
+    const element = document.getElementById('statusChart') as HTMLCanvasElement;
+    if (!element) return;
+
+    const labels = this.ordersByStatus.map((s) => this.getStatusLabel(s.status));
+    const data = this.ordersByStatus.map((s) => s.count);
+    const colors = this.ordersByStatus.map((s) => this.getStatusColor(s.status));
+
+    if (this.statusChart) this.statusChart.destroy();
+
+    const ctx = element.getContext('2d');
+    this.statusChart = new Chart(ctx as any, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [
+          {
+            data,
+            backgroundColor: colors,
+            borderColor: '#fff',
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom' as any
+          }
+        }
+      }
+    });
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: { [key: string]: string } = {
+      pending: 'Chờ xác nhận',
+      confirmed: 'Đã xác nhận',
+      preparing: 'Đang chuẩn bị',
+      shipping: 'Đang giao',
+      delivered: 'Đã giao',
+      canceled: 'Đã hủy'
+    };
+    return labels[status?.toLowerCase()] || status;
+  }
+
+  getStatusColor(status: string): string {
+    const colors: { [key: string]: string } = {
+      pending: '#fbbf24',
+      confirmed: '#3b82f6',
+      preparing: '#8b5cf6',
+      shipping: '#10b981',
+      delivered: '#059669',
+      canceled: '#ef4444'
+    };
+    return colors[status?.toLowerCase()] || '#6b7280';
+  }
+
+  exportReport(format: 'csv' | 'pdf' | 'excel') {
+    const url = `${environment.apiUrl}/admin/export?format=${format}&range=${this.selectedRange}`;
+    window.location.href = url;
+  }
+
+  onRangeChange() {
+    this.loadAllData();
+  }
+
+  getTotalOrders(): number {
+    return (this.ordersByStatus || []).reduce((sum, item) => sum + (item.count || 0), 0);
+  }
+
+  getPercentage(count: number): number {
+    const total = this.getTotalOrders();
+    return total > 0 ? (count / total) * 100 : 0;
   }
 }

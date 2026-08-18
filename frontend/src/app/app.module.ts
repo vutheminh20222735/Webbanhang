@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { CustomerLayoutComponent } from './layouts/customer-layout/customer-layout.component';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
@@ -10,6 +11,8 @@ import { ChatbotComponent } from './core/components/chatbot/chatbot.component';
 import { RouterModule, Routes } from '@angular/router';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { AuthGuard } from './core/guards/auth.guard';
+import { CommonModule } from '@angular/common';
+import { ReviewsComponent } from './features/products/reviews.component';
 
 const routes: Routes = [
   {
@@ -38,8 +41,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent],
-  imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, RouterModule.forRoot(routes)],
+  declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent, ReviewsComponent],
+  imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, FormsModule,CommonModule, RouterModule.forRoot(routes)],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })

@@ -1,20 +1,75 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
 const { uploadBuffer } = require('../services/cloudinaryService');
+
+function slugify(name) {
+  return String(name || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || `phone-${Date.now()}`;
+}
+
+async function uniqueSlug(base) {
+  let slug = base;
+  let i = 1;
+  while (await Product.findOne({ slug })) {
+    slug = `${base}-${i++}`;
+  }
+  return slug;
+}
 
 exports.createProduct = async (req, res, next) => {
   try {
-    const data = req.body || {};
+    const body = req.body || {};
+    if (!body.name || body.price === undefined || body.price === '') {
+      return res.status(400).json({ success: false, message: 'Cần tên và giá điện thoại' });
+    }
     const files = req.files || [];
     const images = [];
     for (const f of files) {
-      const r = await uploadBuffer(f.buffer, { folder: 'phone-shop/products' });
-      images.push(r.secure_url);
+      try {
+        const r = await uploadBuffer(f.buffer, { folder: 'phone-shop/products' });
+        if (r && r.secure_url) images.push(r.secure_url);
+      } catch (e) {
+        console.error('Cloudinary upload failed', e.message);
+      }
     }
-    data.images = images.concat(data.images || []);
+    if (body.imageUrl) images.push(body.imageUrl);
+    const extra = Array.isArray(body.images) ? body.images : (body.images ? [body.images] : []);
+    const data = {
+      name: body.name,
+      slug: await uniqueSlug(body.slug ? slugify(body.slug) : slugify(body.name)),
+      brand: body.brand || '',
+      category: body.category || undefined,
+      description: body.description || '',
+      price: Number(body.price),
+      salePrice: body.salePrice ? Number(body.salePrice) : null,
+      images: images.concat(extra).filter(Boolean),
+      ram: body.ram || '',
+      storage: body.storage || '',
+      color: body.color || '',
+      screen: body.screen || '',
+      cpu: body.cpu || '',
+      camera: body.camera || '',
+      battery: body.battery || '',
+      operatingSystem: body.operatingSystem || 'Android',
+      stock: Number(body.stock || 0),
+      featured: body.featured === true || body.featured === 'true',
+      status: 'active'
+    };
     const product = await Product.create(data);
     const AuditLog = require('../models/AuditLog');
     await AuditLog.create({ action: 'PRODUCT_CREATE', user: req.user.id, entity: 'Product', entityId: product._id, after: product });
     res.json({ success: true, data: product });
+  } catch (err) { next(err); }
+};
+
+exports.listCategories = async (req, res, next) => {
+  try {
+    const items = await Category.find().sort({ name: 1 });
+    res.json({ success: true, data: items });
   } catch (err) { next(err); }
 };
 

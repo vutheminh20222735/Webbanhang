@@ -19,9 +19,9 @@ import { AuthService } from '../../core/services/auth.service';
           <button *ngIf="loggedIn" class="btn-ghost mobile-only" (click)="logout()">Đăng xuất</button>
         </nav>
         <div class="shop-actions desktop-only">
-          <a *ngIf="!loggedIn" routerLink="/login" class="btn-ghost">Đăng nhập</a>
+          <a *ngIf="!loggedIn" routerLink="/login" class="btn-primary header-cta">Đăng nhập</a>
           <a *ngIf="!loggedIn" routerLink="/register" class="btn-primary header-cta">Đăng ký</a>
-          <button *ngIf="loggedIn" class="btn-ghost" (click)="logout()">Đăng xuất</button>
+          <button *ngIf="loggedIn" class="btn-primary header-cta" (click)="logout()">Đăng xuất</button>
         </div>
       </div>
     </header>

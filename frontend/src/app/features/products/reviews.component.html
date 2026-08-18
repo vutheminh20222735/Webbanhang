@@ -1,0 +1,111 @@
+<div class="reviews-container">
+  <h2>Đánh giá & Bình luận</h2>
+
+  <div class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- Rating Summary -->
+  <div class="rating-summary">
+    <div class="rating-score">
+      <div class="score-value">{{ averageRating | number: '1.1-1' }}</div>
+      <div class="stars">
+        <span class="star filled" *ngFor="let i of getStarArray(Math.ceil(averageRating))">★</span>
+        <span class="star empty" *ngFor="let i of getStarArray(5 - Math.ceil(averageRating))">☆</span>
+      </div>
+      <div class="score-count">{{ reviews.length }} đánh giá</div>
+    </div>
+
+    <div class="rating-bars">
+      <div class="rating-bar" *ngFor="let rating of [5, 4, 3, 2, 1]">
+        <div class="bar-label">
+          <span class="stars-small">
+            <span class="star" *ngFor="let i of getStarArray(rating)">★</span>
+          </span>
+        </div>
+        <div class="bar-progress">
+          <div class="bar-fill" [style.width.%]="getRatingPercentage(rating)"></div>
+        </div>
+        <div class="bar-count">{{ ratingCounts[rating] }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Form -->
+  <div class="review-form-section" *ngIf="!isLoading">
+    <button class="btn-primary" (click)="toggleForm()" *ngIf="!showForm && canReview">
+      + Viết đánh giá
+    </button>
+
+    <div class="form-card" *ngIf="showForm">
+      <h3>Viết đánh giá của bạn</h3>
+
+      <form (ngSubmit)="submitReview()">
+        <div class="form-group">
+          <label>Đánh giá *</label>
+          <div class="rating-input">
+            <button
+              type="button"
+              class="rating-btn"
+              *ngFor="let i of getStarArray(5)"
+              [class.selected]="formData.rating >= i"
+              (click)="formData.rating = i"
+            >
+              ★
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="comment">Bình luận *</label>
+          <textarea id="comment" [(ngModel)]="formData.comment" name="comment" placeholder="Chia sẻ trải nghiệm của bạn với sản phẩm này..." rows="5"></textarea>
+          <p class="hint">{{ formData.comment.length }}/1000 ký tự</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá' }}
+          </button>
+          <button type="button" class="btn-secondary" (click)="toggleForm()">
+            Hủy
+          </button>
+        </div>
+      </form>
+
+      <p class="info" *ngIf="!canReview">
+        ℹ️ Bạn cần phải mua sản phẩm này để có thể đánh giá.
+      </p>
+    </div>
+  </div>
+
+  <!-- Reviews List -->
+  <div class="reviews-list" *ngIf="!isLoading">
+    <div class="review-item" *ngFor="let review of reviews">
+      <div class="review-header">
+        <div class="reviewer-info">
+          <span class="reviewer-name">{{ review.userId?.name || 'Ẩn danh' }}</span>
+          <span class="review-date">{{ review.createdAt | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="review-rating">
+          <span class="stars">
+            <span class="star filled" *ngFor="let i of getStarArray(review.rating || 5)">★</span>
+            <span class="star empty" *ngFor="let i of getStarArray(5 - (review.rating || 5))">☆</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="review-body">
+        <p class="comment">{{ review.comment }}</p>
+      </div>
+
+      <div class="review-footer" *ngIf="review.verified">
+        <span class="verified-badge">✓ Đã mua hàng</span>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="reviews.length === 0">
+      <p>Chưa có đánh giá nào.</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Đang tải...</div>

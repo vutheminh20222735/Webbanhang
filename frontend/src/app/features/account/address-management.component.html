@@ -1,0 +1,97 @@
+<div class="address-management-container">
+  <h1>Quản lý địa chỉ</h1>
+
+  <div class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div class="actions-bar">
+    <button class="btn-primary" (click)="toggleForm()" *ngIf="!showForm">
+      + Thêm địa chỉ mới
+    </button>
+  </div>
+
+  <!-- Address Form -->
+  <div class="form-card" *ngIf="showForm">
+    <h2>{{ isEditing ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới' }}</h2>
+
+    <form (ngSubmit)="saveAddress()">
+      <div class="form-group">
+        <label for="name">Họ tên người nhận *</label>
+        <input id="name" type="text" [(ngModel)]="formData.name" name="name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Số điện thoại *</label>
+        <input id="phone" type="tel" [(ngModel)]="formData.phone" name="phone" pattern="[0-9]{10}" required />
+      </div>
+
+      <div class="form-group">
+        <label for="line1">Địa chỉ chi tiết *</label>
+        <input id="line1" type="text" [(ngModel)]="formData.line1" name="line1" placeholder="Số nhà, đường phố" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">Thành phố/Tỉnh *</label>
+          <input id="city" type="text" [(ngModel)]="formData.city" name="city" required />
+        </div>
+        <div class="form-group">
+          <label for="district">Quận/Huyện</label>
+          <input id="district" type="text" [(ngModel)]="formData.district" name="district" />
+        </div>
+      </div>
+
+      <div class="form-checkbox">
+        <input id="isDefault" type="checkbox" [(ngModel)]="formData.isDefault" name="isDefault" />
+        <label for="isDefault">Đặt làm địa chỉ mặc định</label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="isSaving">
+          {{ isSaving ? 'Đang lưu...' : (isEditing ? 'Cập nhật' : 'Thêm') }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="toggleForm()">
+          Hủy
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Address List -->
+  <div class="addresses-list" *ngIf="addresses.length > 0 && !showForm">
+    <div class="address-card" *ngFor="let addr of addresses">
+      <div class="address-header">
+        <div class="address-name">
+          <strong>{{ addr.name }}</strong>
+          <span class="default-badge" *ngIf="addr.isDefault">Mặc định</span>
+        </div>
+      </div>
+
+      <div class="address-info">
+        <p><span class="label">Số điện thoại:</span> {{ addr.phone }}</p>
+        <p><span class="label">Địa chỉ:</span> {{ addr.line1 }}</p>
+        <p><span class="label">Thành phố:</span> {{ addr.city }}</p>
+        <p *ngIf="addr.district"><span class="label">Quận/Huyện:</span> {{ addr.district }}</p>
+      </div>
+
+      <div class="address-actions">
+        <button class="btn-secondary" (click)="editAddress(addr)">
+          Sửa
+        </button>
+        <button class="btn-secondary" (click)="setDefault(addr)" *ngIf="!addr.isDefault">
+          Đặt mặc định
+        </button>
+        <button class="btn-danger" (click)="deleteAddress(addr)">
+          Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="addresses.length === 0 && !showForm">
+    <p>Chưa có địa chỉ nào. Hãy thêm địa chỉ giao hàng.</p>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Đang tải...</div>

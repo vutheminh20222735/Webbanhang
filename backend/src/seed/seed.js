@@ -28,10 +28,10 @@ const seed = async () => {
     AuditLog.deleteMany()
   ]);
 
-  const password = await bcrypt.hash('Password123', 10);
+  const password = await bcrypt.hash('123456', 10);
 
   const users = [
-    { name: 'Admin User', email: 'admin@demo.com', password, role: 'ADMIN' },
+    { name: 'Admin User', email: 'vutheminh@admin.com', password, role: 'ADMIN' },
     { name: 'Manager User', email: 'manager@demo.com', password, role: 'MANAGER' },
     { name: 'Staff User', email: 'staff@demo.com', password, role: 'STAFF' }
   ];

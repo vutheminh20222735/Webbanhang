@@ -1,0 +1,134 @@
+<div class="checkout-container">
+  <div class="checkout-header">
+    <h1>🛒 Thanh Toán</h1>
+    <p class="subtitle">Hoàn tất đơn hàng của bạn</p>
+  </div>
+
+  <!-- Message Alert -->
+  <div class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div class="checkout-content">
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h2>📦 Tóm tắt đơn hàng</h2>
+
+      <!-- Cart Items -->
+      <div class="summary-items">
+        <div class="summary-item" *ngFor="let item of cartItems">
+          <div class="item-visual">
+            <img [src]="item.productId?.image || 'assets/placeholder.png'" alt="Product" class="product-img" />
+            <div class="item-info">
+              <div class="item-name">{{ item.productId?.name || item.name }}</div>
+              <div class="item-detail">
+                <span class="qty">Số lượng: <strong>{{ item.quantity }}</strong></span>
+                <span class="price">{{ item.price | number }}₫</span>
+              </div>
+            </div>
+          </div>
+          <div class="item-total">
+            {{ (item.price * item.quantity) | number }}₫
+          </div>
+        </div>
+      </div>
+
+      <!-- Coupon Section -->
+      <div class="coupon-section">
+        <h3>🎁 Mã Giảm Giá</h3>
+        <div class="coupon-input-group">
+          <input 
+            type="text" 
+            [(ngModel)]="couponCode" 
+            placeholder="Nhập mã giảm giá..."
+            class="coupon-input"
+            [disabled]="appliedCoupon"
+          />
+          <button 
+            type="button"
+            class="btn-coupon"
+            (click)="applyCoupon()"
+            [disabled]="isApplyingCoupon || appliedCoupon"
+          >
+            {{ isApplyingCoupon ? 'Đang...' : 'Áp dụng' }}
+          </button>
+        </div>
+        <div class="coupon-applied" *ngIf="appliedCoupon">
+          <span class="coupon-badge">✓ {{ appliedCoupon.code }}</span>
+          <button type="button" class="remove-coupon" (click)="removeCoupon()">✕</button>
+        </div>
+      </div>
+
+      <!-- Price Breakdown -->
+      <div class="price-breakdown">
+        <div class="breakdown-row">
+          <span>Tạm tính:</span>
+          <span>{{ subtotal | number }}₫</span>
+        </div>
+        <div class="breakdown-row" *ngIf="discountAmount > 0" style="color: #10b981;">
+          <span>Giảm giá:</span>
+          <span>-{{ discountAmount | number }}₫</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Phí vận chuyển:</span>
+          <span>{{ shippingFee | number }}₫</span>
+        </div>
+        <div class="breakdown-divider"></div>
+        <div class="breakdown-total">
+          <span>Tổng cộng:</span>
+          <span class="total-amount">{{ total | number }}₫</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout Form -->
+    <form class="checkout-form" (submit)="onCheckout($event)">
+      <h2>📋 Thông tin giao hàng</h2>
+
+      <div class="form-group">
+        <label for="name">Họ tên *</label>
+        <input id="name" name="name" type="text" placeholder="Nguyễn Văn A" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input id="email" name="email" type="email" placeholder="email@example.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Số điện thoại *</label>
+        <input id="phone" name="phone" type="tel" placeholder="0123456789" pattern="[0-9]{10}" required />
+      </div>
+
+      <div class="form-group">
+        <label for="line1">Địa chỉ chi tiết *</label>
+        <input id="line1" name="line1" type="text" placeholder="Số nhà, đường phố" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">Thành phố/Tỉnh *</label>
+          <input id="city" name="city" type="text" placeholder="Hà Nội" required />
+        </div>
+        <div class="form-group">
+          <label for="district">Quận/Huyện *</label>
+          <input id="district" name="district" type="text" placeholder="Hoàn Kiếm" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="payment">Phương thức thanh toán *</label>
+        <select id="payment" name="payment" required>
+          <option value="COD">💵 Tiền mặt khi nhận hàng (COD)</option>
+          <option value="CARD">💳 Thẻ tín dụng (Stripe)</option>
+        </select>
+      </div>
+
+      <div id="card-element" class="card-element" *ngIf="'CARD'"></div>
+
+      <button class="btn-primary btn-submit" type="submit" [disabled]="isProcessing">
+        {{ isProcessing ? '⏳ Đang xử lý...' : '✓ Đặt hàng' }}
+      </button>
+    </form>
+  </div>
+</div>

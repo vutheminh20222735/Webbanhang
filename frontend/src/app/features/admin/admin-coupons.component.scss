@@ -1,0 +1,357 @@
+:host {
+  display: block;
+  padding: 20px;
+}
+
+.admin-coupons-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin: 0 0 24px;
+  font-size: 24px;
+  color: #1f2937;
+}
+
+h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+
+  &.success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+  }
+
+  &.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+}
+
+.actions-bar {
+  margin-bottom: 24px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+  }
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #1f2937;
+
+  &:hover:not(:disabled) {
+    background: #d1d5db;
+  }
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #dc2626;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+  }
+}
+
+/* Form */
+.form-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+input,
+select {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #1f2937;
+    margin: 0;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+
+  button {
+    flex: 1;
+  }
+}
+
+/* Table */
+.coupons-table {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  &.expired {
+    opacity: 0.6;
+  }
+}
+
+.data-table td {
+  padding: 12px 16px;
+  color: #4b5563;
+}
+
+.code {
+  color: #1f2937;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.desc {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+.discount {
+  font-weight: 600;
+  color: #ef4444;
+  font-size: 15px;
+}
+
+.condition {
+  font-size: 13px;
+}
+
+.date {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.usage {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .badge {
+    background: #dbeafe;
+    color: #0c4a6e;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    width: fit-content;
+  }
+
+  .remaining {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.status-toggle {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+
+  &.active {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #2563eb;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.expired-label {
+  font-size: 11px;
+  color: #991b1b;
+  background: #fee2e2;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 12px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    &.btn-secondary {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    &.btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}

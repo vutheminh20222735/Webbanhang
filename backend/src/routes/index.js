@@ -1,9 +1,13 @@
 const express = require('express');
+
 const router = express.Router();
 
 router.use('/auth', require('./auth'));
 router.use('/ai', require('./ai'));
+
 router.use('/admin/users', require('./adminUsers'));
+router.use('/admin/coupons', require('./adminCoupons')); // THÊM
+
 router.use('/products', require('./products'));
 router.use('/cart', require('./cart'));
 router.use('/reviews', require('./reviews'));

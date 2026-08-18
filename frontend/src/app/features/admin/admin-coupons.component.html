@@ -1,0 +1,137 @@
+<div class="admin-coupons-container">
+  <h2>Quản lý mã giảm giá</h2>
+
+  <div class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div class="actions-bar">
+    <button class="btn-primary" (click)="toggleForm()" *ngIf="!showForm">
+      + Tạo mã giảm giá
+    </button>
+  </div>
+
+  <!-- Coupon Form -->
+  <div class="form-card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Chỉnh sửa mã giảm giá' : 'Tạo mã giảm giá' }}</h3>
+
+    <form (ngSubmit)="saveCoupon()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="code">Mã giảm giá *</label>
+          <input id="code" type="text" [(ngModel)]="formData.code" name="code" placeholder="VD: SUMMER2024" required />
+        </div>
+        <div class="form-group">
+          <label for="description">Mô tả</label>
+          <input id="description" type="text" [(ngModel)]="formData.description" name="description" placeholder="Giảm giá mùa hè" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="discountType">Loại giảm *</label>
+          <select id="discountType" [(ngModel)]="formData.discountType" name="discountType" required>
+            <option value="percentage">Giảm theo %</option>
+            <option value="fixed">Giảm theo số tiền (₫)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="discountValue">Giá trị giảm *</label>
+          <input id="discountValue" type="number" [(ngModel)]="formData.discountValue" name="discountValue" placeholder="0" required />
+        </div>
+      </div>
+
+      <div class="form-row" *ngIf="formData.discountType === 'percentage'">
+        <div class="form-group">
+          <label for="maxDiscount">Giảm tối đa (₫)</label>
+          <input id="maxDiscount" type="number" [(ngModel)]="formData.maxDiscount" name="maxDiscount" placeholder="Không giới hạn" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="minOrderValue">Đơn hàng tối thiểu (₫) *</label>
+          <input id="minOrderValue" type="number" [(ngModel)]="formData.minOrderValue" name="minOrderValue" placeholder="0" required />
+        </div>
+        <div class="form-group">
+          <label for="maxUsage">Lượt dùng tối đa *</label>
+          <input id="maxUsage" type="number" [(ngModel)]="formData.maxUsage" name="maxUsage" placeholder="999" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Ngày bắt đầu *</label>
+          <input id="startDate" type="date" [(ngModel)]="formData.startDate" name="startDate" required />
+        </div>
+        <div class="form-group">
+          <label for="endDate">Ngày kết thúc *</label>
+          <input id="endDate" type="date" [(ngModel)]="formData.endDate" name="endDate" required />
+        </div>
+      </div>
+
+      <div class="form-checkbox">
+        <input id="isActive" type="checkbox" [(ngModel)]="formData.isActive" name="isActive" />
+        <label for="isActive">Kích hoạt ngay</label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="isSaving">
+          {{ isSaving ? 'Đang lưu...' : (isEditing ? 'Cập nhật' : 'Tạo') }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="toggleForm()">
+          Hủy
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Coupons List -->
+  <div class="coupons-table" *ngIf="!isLoading">
+    <table class="data-table" *ngIf="coupons.length > 0">
+      <thead>
+        <tr>
+          <th>Mã</th>
+          <th>Giảm</th>
+          <th>Điều kiện</th>
+          <th>Thời hạn</th>
+          <th>Dùng</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let coupon of coupons" [class.expired]="isExpired(coupon)">
+          <td>
+            <strong class="code">{{ coupon.code }}</strong>
+            <p class="desc" *ngIf="coupon.description">{{ coupon.description }}</p>
+          </td>
+          <td class="discount">{{ getDiscountDisplay(coupon) }}</td>
+          <td class="condition">Tối thiểu: {{ coupon.minOrderValue | number }}₫</td>
+          <td class="date">
+            {{ coupon.startDate | date: 'dd/MM/yyyy' }} → {{ coupon.endDate | date: 'dd/MM/yyyy' }}
+          </td>
+          <td class="usage">
+            <span class="badge">{{ coupon.usageCount }} / {{ coupon.maxUsage }}</span>
+            <p class="remaining">Còn: {{ getRemainingUsage(coupon) }}</p>
+          </td>
+          <td class="status">
+            <button class="status-toggle" (click)="toggleActive(coupon)" [class.active]="coupon.isActive" [disabled]="isExpired(coupon)">
+              {{ coupon.isActive ? '✓ Hoạt động' : '✗ Vô hiệu' }}
+            </button>
+            <span class="expired-label" *ngIf="isExpired(coupon)">Hết hạn</span>
+          </td>
+          <td class="actions">
+            <button class="btn-sm btn-secondary" (click)="editCoupon(coupon)">Sửa</button>
+            <button class="btn-sm btn-danger" (click)="deleteCoupon(coupon)">Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="empty-state" *ngIf="coupons.length === 0">
+      <p>Chưa có mã giảm giá nào. Tạo mã đầu tiên!</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Đang tải...</div>

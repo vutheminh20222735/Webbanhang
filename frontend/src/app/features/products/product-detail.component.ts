@@ -7,44 +7,8 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
-  template: `
-    <a routerLink="/" class="back-link">← Tất cả điện thoại</a>
-    <p class="muted" *ngIf="loading">Đang tải thông tin máy...</p>
-    <p class="error" *ngIf="error">{{error}}</p>
-    <div class="detail" *ngIf="product">
-      <div class="detail-media">
-        <img [src]="product.images?.[0] || placeholder" [alt]="product.name" />
-      </div>
-      <div class="detail-info">
-        <span class="brand">{{product.brand}}</span>
-        <h1>{{product.name}}</h1>
-        <p class="muted">{{product.description}}</p>
-        <ul class="specs">
-          <li>RAM: {{product.ram}}</li>
-          <li>Bộ nhớ: {{product.storage}}</li>
-          <li>Màu: {{product.color}}</li>
-          <li>Màn hình: {{product.screen}}</li>
-          <li>Chip: {{product.cpu}}</li>
-          <li>Camera: {{product.camera}}</li>
-          <li>Pin: {{product.battery}}</li>
-          <li>Hệ điều hành: {{product.operatingSystem}}</li>
-        </ul>
-        <div class="price-row">
-          <strong>{{product.salePrice || product.price | number}}₫</strong>
-          <s *ngIf="product.salePrice">{{product.price | number}}₫</s>
-        </div>
-        <p class="stock">Còn {{product.stock}} máy</p>
-        <label class="qty-label">Số lượng
-          <input type="number" [(ngModel)]="qty" min="1" [max]="product.stock" />
-        </label>
-        <div class="buy-row sticky-buy">
-          <button class="btn-outline" (click)="addToCart()">Thêm vào giỏ</button>
-          <button class="btn-primary" (click)="buyNow()">Mua ngay</button>
-        </div>
-        <p class="login-hint" *ngIf="!loggedIn">Cần <a [routerLink]="['/login']" [queryParams]="{returnUrl: currentUrl}">đăng nhập</a> hoặc <a routerLink="/register">đăng ký</a> để mua hàng.</p>
-      </div>
-    </div>
-  `
+  templateUrl: './product-detail.component.html',
+  styleUrls: ['./product-detail.component.scss']
 })
 export class ProductDetailComponent implements OnInit, AfterViewInit {
   product: any;

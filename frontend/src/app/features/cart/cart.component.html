@@ -1,0 +1,69 @@
+<h1>Giỏ hàng</h1>
+
+<div *ngIf="cart?.items?.length; else empty" class="cart-container">
+
+  <!-- Chọn tất cả -->
+  <div class="cart-select-all">
+    <label>
+      <input
+        type="checkbox"
+        [checked]="isAllSelected()"
+        (change)="toggleAll()"
+      />
+      Chọn tất cả
+    </label>
+
+    <span>
+      Đã chọn {{ selectedItems.length }}/{{ cart.items.length }}
+    </span>
+  </div>
+
+  <!-- Danh sách sản phẩm -->
+  <div
+    class="cart-item"
+    *ngFor="let it of cart.items"
+    [class.selected]="isSelected(it)"
+  >
+
+    <input
+      type="checkbox"
+      class="item-checkbox"
+      [checked]="isSelected(it)"
+      (change)="toggleItem(it)"
+    />
+
+    <div class="item-info">
+      <strong>{{ it.name || it.product?.name }}</strong>
+      <p>Số lượng: {{ it.quantity }}</p>
+    </div>
+
+    <span class="item-price">
+      {{ ((it.priceAt || it.price || 0) * it.quantity) | number }}₫
+    </span>
+
+  </div>
+
+  <!-- Tổng -->
+  <div class="cart-summary">
+    <span>Tổng tiền:</span>
+
+    <strong>
+      {{ getSelectedTotal() | number }}₫
+    </strong>
+  </div>
+
+  <button
+    type="button"
+    class="btn-primary"
+    [disabled]="selectedItems.length === 0"
+    (click)="goToCheckout()"
+  >
+    Thanh toán
+  </button>
+
+</div>
+
+<ng-template #empty>
+  <p class="muted">Giỏ hàng trống.</p>
+  <a routerLink="/" class="btn-primary">Mua điện thoại</a>
+</ng-template>

@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://webbanhang-2i3h.onrender.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "info"
+  }
+}
