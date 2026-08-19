@@ -1,0 +1,22 @@
+<app-account-nav></app-account-nav>
+<div class="reviews-account">
+  <h1>Đánh giá sản phẩm</h1>
+  <p class="muted">Đánh giá các điện thoại bạn đã mua. Chọn sản phẩm để xem và gửi đánh giá.</p>
+
+  <div class="product-grid" *ngIf="products.length; else empty">
+    <a class="review-product" *ngFor="let p of products" [routerLink]="['/product', p._id]">
+      <img [src]="p.images?.[0] || placeholder" [alt]="p.name" />
+      <div>
+        <strong>{{ p.name }}</strong>
+        <span>Viết / xem đánh giá →</span>
+      </div>
+    </a>
+  </div>
+
+  <ng-template #empty>
+    <div class="empty-state">
+      <p>Chưa có sản phẩm để đánh giá. Hãy đặt hàng trước.</p>
+      <a routerLink="/" class="btn-primary">Mua điện thoại</a>
+    </div>
+  </ng-template>
+</div>

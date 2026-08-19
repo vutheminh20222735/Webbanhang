@@ -28,21 +28,21 @@
       <div class="stat-icon">⏳</div>
       <div class="stat-content">
         <div class="stat-label">Chờ xác nhận</div>
-        <div class="stat-value">{{ (orders | filter:{ orderStatus: 'pending' }).length }}</div>
+        <div class="stat-value">{{ countByStatus('pending') }}</div>
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">✓</div>
       <div class="stat-content">
         <div class="stat-label">Đã giao</div>
-        <div class="stat-value">{{ (orders | filter:{ orderStatus: 'delivered' }).length }}</div>
+        <div class="stat-value">{{ countByStatus('delivered') }}</div>
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">✕</div>
       <div class="stat-content">
         <div class="stat-label">Đã hủy</div>
-        <div class="stat-value">{{ (orders | filter:{ orderStatus: 'canceled' }).length }}</div>
+        <div class="stat-value">{{ countByStatus('canceled') }}</div>
       </div>
     </div>
   </div>
@@ -88,7 +88,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let o of orders" class="order-row" [class.archived]="o.orderStatus === 'canceled'">
+          <tr *ngFor="let o of orders" class="order-row" [class.archived]="getStatusClass(o.orderStatus) === 'cancelled'">
             <td class="col-code">
               <span class="order-code">{{ o.orderCode || o._id }}</span>
             </td>
@@ -108,7 +108,7 @@
               <strong class="price">{{ o.total | number }}₫</strong>
             </td>
             <td class="col-status">
-              <span class="status-badge" [class]="'status-' + (o.orderStatus || 'pending')" 
+              <span class="status-badge" [class]="'status-' + getStatusClass(o.orderStatus)"
                     [style.backgroundColor]="getStatusColor(o.orderStatus)">
                 {{ getStatusLabel(o.orderStatus) }}
               </span>
@@ -135,7 +135,7 @@
   </div>
 
   <!-- Order Detail Modal -->
-  <div class="modal-overlay" *ngIf="selectedOrder" [@fadeInOut] (click)="closeDetail()">
+  <div class="modal-overlay" *ngIf="selectedOrder" (click)="closeDetail()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-title">
@@ -161,7 +161,7 @@
             <div class="detail-row">
               <span class="label">Trạng thái</span>
               <span class="value">
-                <span class="status-badge" [class]="'status-' + (selectedOrder.orderStatus || 'pending')"
+                <span class="status-badge" [class]="'status-' + getStatusClass(selectedOrder.orderStatus)"
                       [style.backgroundColor]="getStatusColor(selectedOrder.orderStatus)">
                   {{ getStatusLabel(selectedOrder.orderStatus) }}
                 </span>

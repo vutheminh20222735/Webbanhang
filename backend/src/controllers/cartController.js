@@ -1,6 +1,10 @@
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
+const Order = require('../models/Order');
+
+const checkoutLocks = new Map();
+const SHIPPING_FEE = 30000;
 
 exports.getCart = async (req, res, next) => {
   try {
@@ -66,41 +70,142 @@ exports.applyCoupon = async (req, res, next) => {
 };
 
 exports.checkout = async (req, res, next) => {
-  try {
-    const { shippingAddress, paymentMethod, notes, couponCode } = req.body;
-    const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
-    if (!cart || cart.items.length === 0) return res.status(400).json({ success: false, message: 'Cart empty' });
-    // Basic calculation
-    let subtotal = 0;
-    for (const it of cart.items) subtotal += (it.priceAt || it.product.price) * it.quantity;
-    let discount = 0;
-    if (couponCode) {
-      const c = await Coupon.findOne({ code: couponCode, active: true });
-      if (!c) return res.status(400).json({ success: false, message: 'Invalid coupon' });
-      if (c.discountType === 'PERCENT') discount = subtotal * (c.value / 100);
-      else discount = c.value;
-    }
-    const shippingFee = 5;
-    const total = subtotal + shippingFee - discount;
+  const userId = String(req.user.id);
+  if (checkoutLocks.has(userId)) {
+    return res.status(409).json({ success: false, message: 'Đơn hàng đang được xử lý, vui lòng đợi' });
+  }
+  checkoutLocks.set(userId, Date.now());
 
-    // create order (controller for orders will handle stock deduction, payments separately)
-    const Order = require('../models/Order');
+  try {
+    const { shippingAddress, paymentMethod, notes, couponCode, itemIds } = req.body || {};
+
+    if (!shippingAddress || !shippingAddress.name || !shippingAddress.phone || !shippingAddress.line1) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin giao hàng' });
+    }
+
+    const requestedIds = Array.isArray(itemIds)
+      ? [...new Set(itemIds.map((id) => String(id || '')).filter(Boolean))]
+      : [];
+    if (!requestedIds.length) {
+      return res.status(400).json({ success: false, message: 'Vui lòng chọn sản phẩm để thanh toán' });
+    }
+
+    const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
+    if (!cart || !cart.items.length) {
+      return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
+    }
+
+    const selected = [];
+    for (const id of requestedIds) {
+      const item = cart.items.id(id);
+      if (!item) {
+        return res.status(400).json({ success: false, message: 'Sản phẩm không còn trong giỏ hàng' });
+      }
+      selected.push(item);
+    }
+
+    const orderItems = [];
+    let subtotal = 0;
+    for (const it of selected) {
+      const productId = it.product && it.product._id ? it.product._id : it.product;
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(400).json({ success: false, message: `Sản phẩm ${it.name || ''} không tồn tại` });
+      }
+      if (product.status && product.status !== 'active') {
+        return res.status(400).json({ success: false, message: `${product.name} hiện không bán` });
+      }
+
+      const qty = Number(it.quantity);
+      if (!Number.isInteger(qty) || qty < 1) {
+        return res.status(400).json({ success: false, message: `Số lượng không hợp lệ cho ${product.name}` });
+      }
+      if (product.stock < qty) {
+        return res.status(400).json({ success: false, message: `Không đủ tồn kho cho ${product.name}` });
+      }
+
+      const price = Number(product.salePrice || product.price);
+      if (!Number.isFinite(price) || price < 0) {
+        return res.status(400).json({ success: false, message: `Giá không hợp lệ cho ${product.name}` });
+      }
+
+      orderItems.push({
+        product: product._id,
+        name: product.name,
+        quantity: qty,
+        price,
+        color: it.color,
+        storage: it.storage
+      });
+      subtotal += price * qty;
+    }
+
+    let discount = 0;
+    let couponDoc = null;
+    if (couponCode) {
+      const code = String(couponCode).trim().toUpperCase();
+      couponDoc = await Coupon.findOne({ code, active: true });
+      if (!couponDoc) return res.status(400).json({ success: false, message: 'Mã giảm giá không hợp lệ' });
+      if (couponDoc.startDate && couponDoc.startDate > new Date()) {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá chưa tới ngày áp dụng' });
+      }
+      if (couponDoc.expiresAt && couponDoc.expiresAt < new Date()) {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá đã hết hạn' });
+      }
+      if (couponDoc.minOrderValue && subtotal < couponDoc.minOrderValue) {
+        return res.status(400).json({ success: false, message: 'Đơn hàng chưa đạt giá trị tối thiểu' });
+      }
+      if (couponDoc.usageLimit && couponDoc.usedCount >= couponDoc.usageLimit) {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá đã hết lượt dùng' });
+      }
+      discount = couponDoc.discountType === 'PERCENT'
+        ? subtotal * (Number(couponDoc.value) / 100)
+        : Number(couponDoc.value);
+      if (couponDoc.maxDiscount && couponDoc.discountType === 'PERCENT' && discount > couponDoc.maxDiscount) {
+        discount = couponDoc.maxDiscount;
+      }
+      if (discount > subtotal) discount = subtotal;
+      if (discount < 0) discount = 0;
+    }
+
+    const shippingFee = SHIPPING_FEE;
+    const total = Math.max(0, subtotal + shippingFee - discount);
+
     const order = await Order.create({
-      orderCode: `ORD-${Date.now()}`,
+      orderCode: `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       user: req.user.id,
-      items: cart.items.map(i => ({ product: i.product._id || i.product, name: i.name, quantity: i.quantity, price: i.priceAt })),
+      items: orderItems,
       shippingAddress,
       subtotal,
       discount,
       shippingFee,
       total,
-      paymentMethod,
-      paymentStatus: paymentMethod === 'CARD' ? 'PENDING' : 'PENDING',
+      paymentMethod: paymentMethod || 'COD',
+      paymentStatus: 'PENDING',
       orderStatus: 'PENDING',
+      coupon: couponDoc ? couponDoc._id : undefined,
       notes
     });
 
-    // return order for client to proceed to payment
+    if (couponDoc) {
+      await Coupon.updateOne({ _id: couponDoc._id }, { $inc: { usedCount: 1 } });
+    }
+
+    try {
+      for (const id of requestedIds) {
+        const sub = cart.items.id(id);
+        if (sub) sub.remove();
+      }
+      cart.updatedAt = Date.now();
+      await cart.save();
+    } catch (cartErr) {
+      console.error('Order created but cart cleanup failed', cartErr);
+    }
+
     res.json({ success: true, data: order });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  } finally {
+    checkoutLocks.delete(userId);
+  }
 };

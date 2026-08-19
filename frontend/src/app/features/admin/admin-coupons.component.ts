@@ -58,12 +58,12 @@ export class AdminCouponsComponent implements OnInit {
       .get(`${environment.apiUrl}/admin/coupons`)
       .subscribe(
         (res: any) => {
-          this.coupons = res.data?.items || [];
+          this.coupons = res.data?.items || (Array.isArray(res.data) ? res.data : []);
           this.isLoading = false;
         },
         (err) => {
-          console.error('Failed to load coupons', err);
           this.isLoading = false;
+          this.showMessage('Không tải được mã giảm giá: ' + (err.error?.message || err.message), 'error');
         }
       );
   }
@@ -196,6 +196,9 @@ export class AdminCouponsComponent implements OnInit {
   }
 
   getRemainingUsage(coupon: Coupon): number {
-    return coupon.maxUsage - coupon.usageCount;
+    const max = Number(coupon.maxUsage || 0);
+    const used = Number(coupon.usageCount || 0);
+    if (!max) return 0;
+    return Math.max(0, max - used);
   }
 }

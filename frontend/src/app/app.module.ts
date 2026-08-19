@@ -12,7 +12,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { AuthGuard } from './core/guards/auth.guard';
 import { CommonModule } from '@angular/common';
-import { ReviewsComponent } from './features/products/reviews.component';
 
 const routes: Routes = [
   {
@@ -25,7 +24,8 @@ const routes: Routes = [
       { path: 'orders', canActivate: [AuthGuard], loadChildren: () => import('./features/orders/orders.module').then(m => m.OrdersModule) },
       { path: 'account', canActivate: [AuthGuard], loadChildren: () => import('./features/account/account.module').then(m => m.AccountModule) },
       { path: 'login', loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule) },
-      { path: 'register', loadChildren: () => import('./features/auth/register.module').then(m => m.RegisterModule) }
+      { path: 'register', loadChildren: () => import('./features/auth/register.module').then(m => m.RegisterModule) },
+      { path: 'forgot-password', loadChildren: () => import('./features/auth/forgot-password.module').then(m => m.ForgotPasswordModule) }
     ]
   },
   {
@@ -41,8 +41,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent, ReviewsComponent],
-  imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, FormsModule,CommonModule, RouterModule.forRoot(routes)],
+  declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent],
+  imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, FormsModule, CommonModule, RouterModule.forRoot(routes)],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })

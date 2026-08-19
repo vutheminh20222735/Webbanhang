@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 
 @Component({
   templateUrl: './profile.component.html',
@@ -30,7 +28,7 @@ export class ProfileComponent implements OnInit {
 
   showPasswordForm = false;
 
-  constructor(private auth: AuthService, private http: HttpClient) {}
+  constructor(private auth: AuthService) {}
 
   ngOnInit() {
     this.loadUserProfile();
@@ -38,17 +36,31 @@ export class ProfileComponent implements OnInit {
 
   loadUserProfile() {
     this.isLoading = true;
-    const userFromToken = this.auth.getUserFromToken();
-    if (userFromToken) {
-      this.user = userFromToken;
-      this.formData = {
-        name: userFromToken.name || '',
-        email: userFromToken.email || '',
-        phone: userFromToken.phone || '',
-        address: userFromToken.address || ''
-      };
-    }
-    this.isLoading = false;
+    this.auth.me().subscribe(
+      (res: any) => {
+        this.user = res.data || {};
+        this.formData = {
+          name: this.user.name || '',
+          email: this.user.email || '',
+          phone: this.user.phone || '',
+          address: this.user.address || ''
+        };
+        this.isLoading = false;
+      },
+      () => {
+        const userFromToken = this.auth.getUserFromToken();
+        if (userFromToken) {
+          this.user = userFromToken;
+          this.formData = {
+            name: userFromToken.name || '',
+            email: userFromToken.email || '',
+            phone: userFromToken.phone || '',
+            address: userFromToken.address || ''
+          };
+        }
+        this.isLoading = false;
+      }
+    );
   }
 
   toggleEdit() {
@@ -61,67 +73,53 @@ export class ProfileComponent implements OnInit {
       this.showMessage('Vui lòng điền đầy đủ thông tin', 'error');
       return;
     }
-
     this.isSaving = true;
-    this.http
-      .put(`${environment.apiUrl}/auth/profile`, this.formData)
-      .subscribe(
-        (res: any) => {
-          this.isSaving = false;
-          this.showMessage('Cập nhật thông tin thành công', 'success');
-          this.user = res.data || this.user;
-          this.isEditing = false;
-        },
-        (err) => {
-          this.isSaving = false;
-          this.showMessage('Cập nhật thất bại: ' + (err.error?.message || err.message), 'error');
-        }
-      );
+    this.auth.updateProfile(this.formData).subscribe(
+      (res: any) => {
+        this.isSaving = false;
+        this.showMessage('Cập nhật thông tin thành công', 'success');
+        this.user = res.data || this.user;
+        this.isEditing = false;
+      },
+      (err) => {
+        this.isSaving = false;
+        this.showMessage('Cập nhật thất bại: ' + (err.error?.message || err.message), 'error');
+      }
+    );
   }
 
   changePassword() {
     const { currentPassword, newPassword, confirmPassword } = this.passwordForm;
-
     if (!currentPassword || !newPassword || !confirmPassword) {
       this.showMessage('Vui lòng điền đầy đủ thông tin', 'error');
       return;
     }
-
     if (newPassword !== confirmPassword) {
       this.showMessage('Mật khẩu mới không khớp', 'error');
       return;
     }
-
     if (newPassword.length < 6) {
       this.showMessage('Mật khẩu phải có ít nhất 6 ký tự', 'error');
       return;
     }
-
     this.isSaving = true;
-    this.http
-      .post(`${environment.apiUrl}/auth/change-password`, {
-        currentPassword,
-        newPassword
-      })
-      .subscribe(
-        (res: any) => {
-          this.isSaving = false;
-          this.showMessage('Đổi mật khẩu thành công', 'success');
-          this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-          this.showPasswordForm = false;
-        },
-        (err) => {
-          this.isSaving = false;
-          this.showMessage('Đổi mật khẩu thất bại: ' + (err.error?.message || err.message), 'error');
-        }
-      );
+    this.auth.changePassword(currentPassword, newPassword).subscribe(
+      () => {
+        this.isSaving = false;
+        this.showMessage('Đổi mật khẩu thành công', 'success');
+        this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+        this.showPasswordForm = false;
+      },
+      (err) => {
+        this.isSaving = false;
+        this.showMessage('Đổi mật khẩu thất bại: ' + (err.error?.message || err.message), 'error');
+      }
+    );
   }
 
   showMessage(msg: string, type: 'success' | 'error') {
     this.message = msg;
     this.messageType = type;
-    setTimeout(() => {
-      this.message = '';
-    }, 5000);
+    setTimeout(() => { this.message = ''; }, 5000);
   }
 }

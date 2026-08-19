@@ -1,4 +1,4 @@
-<div class="reviews-container">
+<div class="reviews-container" id="reviews">
   <h2>Đánh giá & Bình luận</h2>
 
   <div class="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'" *ngIf="message">
@@ -33,6 +33,10 @@
 
   <!-- Review Form -->
   <div class="review-form-section" *ngIf="!isLoading">
+    <p class="info" *ngIf="!canReview">
+      <ng-container *ngIf="!auth.getToken()">Bạn cần đăng nhập. Chỉ khách đã mua sản phẩm và đơn đã được xác nhận/giao mới được đánh giá.</ng-container>
+      <ng-container *ngIf="auth.getToken()">Bạn chỉ có thể đánh giá sản phẩm đã mua, sau khi đơn được xác nhận, đang giao hoặc đã giao.</ng-container>
+    </p>
     <button class="btn-primary" (click)="toggleForm()" *ngIf="!showForm && canReview">
       + Viết đánh giá
     </button>
@@ -71,10 +75,6 @@
           </button>
         </div>
       </form>
-
-      <p class="info" *ngIf="!canReview">
-        ℹ️ Bạn cần phải mua sản phẩm này để có thể đánh giá.
-      </p>
     </div>
   </div>
 
@@ -83,7 +83,7 @@
     <div class="review-item" *ngFor="let review of reviews">
       <div class="review-header">
         <div class="reviewer-info">
-          <span class="reviewer-name">{{ review.userId?.name || 'Ẩn danh' }}</span>
+          <span class="reviewer-name">{{ reviewerName(review) }}</span>
           <span class="review-date">{{ review.createdAt | date: 'dd/MM/yyyy' }}</span>
         </div>
         <div class="review-rating">
@@ -95,7 +95,7 @@
       </div>
 
       <div class="review-body">
-        <p class="comment">{{ review.comment }}</p>
+        <p class="comment">{{ reviewBody(review) }}</p>
       </div>
 
       <div class="review-footer" *ngIf="review.verified">

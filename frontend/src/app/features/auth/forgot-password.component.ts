@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   templateUrl: './forgot-password.component.html',
@@ -13,7 +12,7 @@ export class ForgotPasswordComponent {
   messageType: 'success' | 'error' = 'success';
   isSubmitted = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private auth: AuthService) {}
 
   resetPassword() {
     if (!this.email) {
@@ -22,19 +21,17 @@ export class ForgotPasswordComponent {
     }
 
     this.isLoading = true;
-    this.http
-      .post(`${environment.apiUrl}/auth/forgot-password`, { email: this.email })
-      .subscribe(
-        (res: any) => {
-          this.isLoading = false;
-          this.isSubmitted = true;
-          this.showMessage('Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email của bạn.', 'success');
-        },
-        (err) => {
-          this.isLoading = false;
-          this.showMessage('Email không tồn tại hoặc có lỗi xảy ra', 'error');
-        }
-      );
+    this.auth.forgotPassword(this.email).subscribe(
+      () => {
+        this.isLoading = false;
+        this.isSubmitted = true;
+        this.showMessage('Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được ghi nhận.', 'success');
+      },
+      (err) => {
+        this.isLoading = false;
+        this.showMessage(err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại', 'error');
+      }
+    );
   }
 
   showMessage(msg: string, type: 'success' | 'error') {

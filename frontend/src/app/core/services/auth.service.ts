@@ -21,6 +21,22 @@ export class AuthService {
     return this.http.post(`${environment.apiUrl}/auth/register`, payload);
   }
 
+  me() {
+    return this.http.get(`${environment.apiUrl}/auth/me`);
+  }
+
+  updateProfile(payload: any) {
+    return this.http.put(`${environment.apiUrl}/auth/profile`, payload);
+  }
+
+  changePassword(currentPassword: string, newPassword: string) {
+    return this.http.post(`${environment.apiUrl}/auth/change-password`, { currentPassword, newPassword });
+  }
+
+  forgotPassword(email: string) {
+    return this.http.post(`${environment.apiUrl}/auth/forgot-password`, { email });
+  }
+
   setToken(token: string) { localStorage.setItem(this.tokenKey, token); }
   getToken() { return localStorage.getItem(this.tokenKey); }
   logout() { localStorage.removeItem(this.tokenKey); this.user$.next(null); }

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { WishlistService } from '../../core/services/wishlist.service';
 
 @Component({
   templateUrl: './wishlist.component.html',
@@ -12,64 +11,35 @@ export class WishlistComponent implements OnInit {
   message = '';
   messageType: 'success' | 'error' = 'success';
 
-  constructor(private http: HttpClient) {}
+  constructor(private wishlist: WishlistService) {}
 
   ngOnInit() {
-    this.loadWishlist();
-  }
-
-  loadWishlist() {
     this.isLoading = true;
-    this.http
-      .get(`${environment.apiUrl}/wishlist`)
-      .subscribe(
-        (res: any) => {
-          this.wishlistItems = res.data?.items || [];
-          this.isLoading = false;
-        },
-        (err) => {
-          console.error('Failed to load wishlist', err);
-          this.isLoading = false;
-        }
-      );
+    this.wishlist.items$.subscribe((items) => {
+      this.wishlistItems = items;
+      this.isLoading = false;
+    });
+    this.wishlist.reload();
   }
 
   removeFromWishlist(productId: string) {
-    this.http
-      .delete(`${environment.apiUrl}/wishlist/${productId}`)
-      .subscribe(
-        (res: any) => {
-          this.showMessage('Xóa khỏi yêu thích thành công', 'success');
-          this.loadWishlist();
-        },
-        (err) => {
-          this.showMessage('Xóa thất bại', 'error');
-        }
-      );
+    this.wishlist.remove(productId).subscribe({
+      next: () => this.showMessage('Xóa khỏi yêu thích thành công', 'success'),
+      error: () => this.showMessage('Xóa thất bại', 'error')
+    });
   }
 
   clearWishlist() {
-    if (!confirm('Bạn chắc chắn muốn xóa toàn bộ danh sách yêu thích?')) {
-      return;
-    }
-    this.http
-      .delete(`${environment.apiUrl}/wishlist`)
-      .subscribe(
-        (res: any) => {
-          this.showMessage('Xóa toàn bộ yêu thích thành công', 'success');
-          this.loadWishlist();
-        },
-        (err) => {
-          this.showMessage('Xóa thất bại', 'error');
-        }
-      );
+    if (!confirm('Bạn chắc chắn muốn xóa toàn bộ danh sách yêu thích?')) return;
+    this.wishlist.clear().subscribe({
+      next: () => this.showMessage('Xóa toàn bộ yêu thích thành công', 'success'),
+      error: () => this.showMessage('Xóa thất bại', 'error')
+    });
   }
 
   showMessage(msg: string, type: 'success' | 'error') {
     this.message = msg;
     this.messageType = type;
-    setTimeout(() => {
-      this.message = '';
-    }, 5000);
+    setTimeout(() => { this.message = ''; }, 5000);
   }
 }

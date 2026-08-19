@@ -9,7 +9,7 @@
           <strong>{{ o.orderCode || o._id }}</strong>
         </div>
         <div class="order-status">
-          <span class="status-badge" [class]="'status-' + (o.orderStatus || 'pending')">
+          <span class="status-badge" [class]="'status-' + getStatusClass(o.orderStatus)">
             {{ getStatusLabel(o.orderStatus) }}
           </span>
         </div>
@@ -46,6 +46,7 @@
 
   <div class="empty-state" *ngIf="orders.length === 0">
     <p class="muted">Chưa có đơn hàng nào.</p>
+    <a routerLink="/" class="btn-primary">Mua điện thoại</a>
   </div>
 
   <!-- Order Detail Modal -->
@@ -66,7 +67,7 @@
           <div class="detail-row">
             <span class="label">Trạng thái</span>
             <span class="value">
-              <span class="status-badge" [class]="'status-' + (selectedOrder.orderStatus || 'pending')">
+              <span class="status-badge" [class]="'status-' + getStatusClass(selectedOrder.orderStatus)">
                 {{ getStatusLabel(selectedOrder.orderStatus) }}
               </span>
             </span>
@@ -74,6 +75,21 @@
           <div class="detail-row">
             <span class="label">Ngày đặt</span>
             <span class="value">{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Theo dõi đơn hàng</h3>
+          <div class="order-timeline">
+            <div
+              class="timeline-step"
+              *ngFor="let step of getTimeline(selectedOrder.orderStatus)"
+              [class.done]="step.done"
+              [class.current]="step.current"
+            >
+              <span class="dot"></span>
+              <span class="step-label">{{ step.label }}</span>
+            </div>
           </div>
         </div>
 
@@ -101,7 +117,7 @@
           <h3>Sản phẩm</h3>
           <div class="items-list">
             <div class="item-row" *ngFor="let item of selectedOrder.items || []">
-              <span class="item-name">{{ item.productId?.name || item.name }}</span>
+              <a class="item-name" [routerLink]="['/product', item.productId?._id || item.product?._id || item.productId || item.product]">{{ item.productId?.name || item.product?.name || item.name }}</a>
               <span class="item-qty">x {{ item.quantity }}</span>
               <span class="item-price">{{ (item.price * item.quantity) | number }}₫</span>
             </div>
@@ -129,4 +145,5 @@
       </div>
     </div>
   </div>
+</div>
 

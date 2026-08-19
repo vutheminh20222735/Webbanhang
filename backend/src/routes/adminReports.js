@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/authorization');
 const reportCtrl = require('../controllers/adminReportController');
 
+router.get('/dashboard', requireAuth, requirePermission('REPORT_VIEW'), reportCtrl.dashboard);
 router.get('/summary', requireAuth, requirePermission('REPORT_VIEW'), reportCtrl.summary);
 router.get('/revenue', requireAuth, requirePermission('REPORT_VIEW'), reportCtrl.revenue);
 router.get('/top-products', requireAuth, requirePermission('REPORT_VIEW'), reportCtrl.topProducts);

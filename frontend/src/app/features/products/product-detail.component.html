@@ -23,14 +23,17 @@
       <strong>{{product.salePrice || product.price | number}}₫</strong>
       <s *ngIf="product.salePrice">{{product.price | number}}₫</s>
     </div>
-    <p class="stock">Còn {{product.stock}} máy</p>
+    <p class="stock" [class.soldout]="product.stock <= 0">{{ product.stock > 0 ? ('Còn ' + product.stock + ' máy') : 'Hết hàng' }}</p>
     <label class="qty-label">Số lượng
-      <input type="number" [(ngModel)]="qty" min="1" [max]="product.stock" />
+      <input type="number" [(ngModel)]="qty" min="1" [max]="product.stock || 1" />
     </label>
     <div class="buy-row sticky-buy">
-      <button class="btn-outline" (click)="addToCart()">Thêm vào giỏ</button>
-      <button class="btn-primary" (click)="buyNow()">Mua ngay</button>
+      <button class="btn-outline" type="button" (click)="toggleWish()">{{ wished ? '♥ Đã thích' : '♡ Yêu thích' }}</button>
+      <button class="btn-outline" type="button" (click)="addToCart()" [disabled]="product.stock <= 0">Thêm vào giỏ</button>
+      <button class="btn-primary" type="button" (click)="buyNow()" [disabled]="product.stock <= 0">Mua ngay</button>
     </div>
+    <p class="ok" *ngIf="cartMessage">{{ cartMessage }}</p>
     <p class="login-hint" *ngIf="!loggedIn">Cần <a [routerLink]="['/login']" [queryParams]="{returnUrl: currentUrl}">đăng nhập</a> hoặc <a routerLink="/register">đăng ký</a> để mua hàng.</p>
   </div>
 </div>
+<app-reviews *ngIf="product?._id" [productId]="product._id"></app-reviews>
