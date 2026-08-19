@@ -2,6 +2,233 @@ const Payment = require('../models/Payment');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Product = require('../models/Product');
+const { ORDER_STATUSES } = require('../utils/orderStatus');
+
+const TZ = 'Asia/Ho_Chi_Minh';
+const LOW_STOCK_THRESHOLD = 10;
+
+function formatDateVN(date) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date);
+}
+
+function startOfTodayVN() {
+  return new Date(`${formatDateVN(new Date())}T00:00:00+07:00`);
+}
+
+function parseRange(range) {
+  const to = new Date();
+  if (range === 'all') return { from: null, to };
+  const days = range === '7days' ? 7 : range === '90days' ? 90 : 30;
+  return { from: new Date(to.getTime() - days * 24 * 60 * 60 * 1000), to };
+}
+
+function eachDay(from, to) {
+  if (!from) return [];
+  const days = [];
+  const cursor = new Date(from.getTime());
+  let guard = 0;
+  while (formatDateVN(cursor) <= formatDateVN(to) && guard++ < 400) {
+    days.push(formatDateVN(cursor));
+    cursor.setTime(cursor.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return days;
+}
+
+function dateMatch(from, to) {
+  if (!from) return {};
+  return { createdAt: { $gte: from, $lte: to } };
+}
+
+exports.dashboard = async (req, res, next) => {
+  try {
+    const { from, to } = parseRange(req.query.range || '30days');
+    const match = dateMatch(from, to);
+    const todayStart = startOfTodayVN();
+
+    const [facet] = await Order.aggregate([
+      { $match: match },
+      {
+        $facet: {
+          totals: [
+            {
+              $group: {
+                _id: null,
+                totalOrders: { $sum: 1 },
+                revenue: {
+                  $sum: { $cond: [{ $ne: ['$orderStatus', 'CANCELLED'] }, '$total', 0] }
+                },
+                delivered: {
+                  $sum: { $cond: [{ $eq: ['$orderStatus', 'DELIVERED'] }, 1, 0] }
+                }
+              }
+            }
+          ],
+          byStatus: [
+            { $group: { _id: '$orderStatus', count: { $sum: 1 } } }
+          ],
+          byDay: [
+            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            {
+              $group: {
+                _id: {
+                  $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: TZ }
+                },
+                total: { $sum: '$total' }
+              }
+            },
+            { $sort: { _id: 1 } }
+          ],
+          topProducts: [
+            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            { $unwind: '$items' },
+            {
+              $group: {
+                _id: '$items.product',
+                name: { $first: '$items.name' },
+                quantity: { $sum: '$items.quantity' },
+                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+              }
+            },
+            { $sort: { quantity: -1 } },
+            { $limit: 8 },
+            {
+              $lookup: {
+                from: 'products',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'product'
+              }
+            },
+            {
+              $addFields: {
+                name: {
+                  $ifNull: ['$name', { $arrayElemAt: ['$product.name', 0] }]
+                }
+              }
+            }
+          ],
+          categories: [
+            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            { $unwind: '$items' },
+            {
+              $lookup: {
+                from: 'products',
+                localField: 'items.product',
+                foreignField: '_id',
+                as: 'product'
+              }
+            },
+            { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'product.category',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+            {
+              $group: {
+                _id: { $ifNull: ['$category.name', 'Khác'] },
+                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+              }
+            },
+            { $sort: { revenue: -1 } }
+          ]
+        }
+      }
+    ]);
+
+    const [todayAgg] = await Order.aggregate([
+      { $match: { createdAt: { $gte: todayStart } } },
+      {
+        $group: {
+          _id: null,
+          todayOrders: { $sum: 1 },
+          todayRevenue: {
+            $sum: { $cond: [{ $ne: ['$orderStatus', 'CANCELLED'] }, '$total', 0] }
+          }
+        }
+      }
+    ]);
+
+    const totals = (facet && facet.totals[0]) || { totalOrders: 0, revenue: 0, delivered: 0 };
+    const statusMap = {};
+    ((facet && facet.byStatus) || []).forEach((s) => {
+      statusMap[s._id] = s.count;
+    });
+    const ordersByStatus = ORDER_STATUSES.map((status) => ({
+      status,
+      count: statusMap[status] || 0
+    }));
+
+    const dayMap = {};
+    ((facet && facet.byDay) || []).forEach((d) => {
+      dayMap[d._id] = d.total;
+    });
+    const filledDays = from ? eachDay(from, to) : Object.keys(dayMap).sort();
+    const revenueChart = filledDays.map((date) => ({
+      date,
+      total: dayMap[date] || 0
+    }));
+
+    const topProducts = ((facet && facet.topProducts) || []).map((p) => ({
+      id: p._id,
+      name: p.name || 'Sản phẩm',
+      quantity: p.quantity,
+      qty: p.quantity,
+      revenue: p.revenue
+    }));
+
+    const categoryData = ((facet && facet.categories) || []).map((c) => ({
+      category: c._id,
+      revenue: c.revenue
+    }));
+
+    const [totalCustomers, totalProducts, lowStockDocs] = await Promise.all([
+      User.countDocuments({ role: 'CUSTOMER' }),
+      Product.countDocuments(),
+      Product.find({ stock: { $lte: LOW_STOCK_THRESHOLD } }).sort({ stock: 1 }).limit(20).select('name stock')
+    ]);
+
+    const lowStock = lowStockDocs.map((p) => ({
+      id: p._id,
+      name: p.name,
+      stock: p.stock
+    }));
+
+    const successRate = totals.totalOrders
+      ? Math.round((totals.delivered / totals.totalOrders) * 1000) / 10
+      : 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalRevenue: totals.revenue || 0,
+        totalOrders: totals.totalOrders || 0,
+        totalCustomers,
+        totalProducts,
+        successRate,
+        todayRevenue: (todayAgg && todayAgg.todayRevenue) || 0,
+        todayOrders: (todayAgg && todayAgg.todayOrders) || 0,
+        revenueChart,
+        ordersByStatus,
+        topProducts,
+        lowStock,
+        lowStockThreshold: LOW_STOCK_THRESHOLD,
+        categoryData
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.summary = async (req, res, next) => {
   try {

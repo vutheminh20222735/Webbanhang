@@ -20,6 +20,13 @@ router.put(
   couponCtrl.updateCoupon
 );
 
+router.patch(
+  '/:id',
+  requireAuth,
+  requirePermission('COUPON_MANAGE'),
+  couponCtrl.updateCoupon
+);
+
 router.delete(
   '/:id',
   requireAuth,

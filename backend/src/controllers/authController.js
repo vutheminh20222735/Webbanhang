@@ -42,3 +42,48 @@ exports.me = async (req, res, next) => {
     res.json({ success: true, data: user });
   } catch (err) { next(err); }
 };
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+    const { name, phone, address, email } = req.body || {};
+    if (name) user.name = String(name).trim();
+    if (phone !== undefined) user.phone = String(phone || '').trim();
+    if (address !== undefined) user.address = String(address || '').trim();
+    if (email) {
+      const normalized = String(email).toLowerCase().trim();
+      const exists = await User.findOne({ email: normalized, _id: { $ne: user._id } });
+      if (exists) return res.status(400).json({ success: false, message: 'Email đã được sử dụng' });
+      user.email = normalized;
+    }
+    user.updatedAt = Date.now();
+    await user.save();
+    const safe = await User.findById(user._id).select('-password');
+    res.json({ success: true, data: safe });
+  } catch (err) { next(err); }
+};
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) return res.status(400).json({ success: false, message: 'Thiếu mật khẩu' });
+    if (String(newPassword).length < 6) return res.status(400).json({ success: false, message: 'Mật khẩu tối thiểu 6 ký tự' });
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok) return res.status(400).json({ success: false, message: 'Mật khẩu hiện tại không đúng' });
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.updatedAt = Date.now();
+    await user.save();
+    res.json({ success: true, message: 'Đã đổi mật khẩu' });
+  } catch (err) { next(err); }
+};
+
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ success: false, message: 'Vui lòng nhập email' });
+    res.json({ success: true, message: 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được ghi nhận.' });
+  } catch (err) { next(err); }
+};
