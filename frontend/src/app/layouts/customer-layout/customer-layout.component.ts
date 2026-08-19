@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CartService } from '../../core/services/cart.service';
@@ -7,11 +7,11 @@ import { WishlistService } from '../../core/services/wishlist.service';
 @Component({
   selector: 'app-customer-layout',
   template: `
-    <header class="shop-header">
+    <div class="nav-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
+    <header class="shop-header" [class.menu-open]="menuOpen">
       <div class="shop-header-inner">
-        <a routerLink="/" class="logo">Phone<span>Shop</span></a>
-        <button class="menu-toggle" type="button" (click)="menuOpen = !menuOpen" [attr.aria-expanded]="menuOpen">☰</button>
-        <nav class="shop-nav" [class.open]="menuOpen">
+        <a routerLink="/" class="logo" (click)="closeMenu()">Phone<span>Shop</span></a>
+        <nav class="shop-nav" [class.open]="menuOpen" (click)="$event.stopPropagation()">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Điện thoại</a>
           <a routerLink="/wishlist" routerLinkActive="active" (click)="closeMenu()">Yêu thích</a>
           <a routerLink="/cart" routerLinkActive="active" class="nav-cart" (click)="closeMenu()">
@@ -23,16 +23,18 @@ import { WishlistService } from '../../core/services/wishlist.service';
           <a *ngIf="isStaff" routerLink="/admin" (click)="closeMenu()">Quản trị</a>
           <a *ngIf="!loggedIn" routerLink="/login" routerLinkActive="active" class="nav-auth mobile-only" (click)="closeMenu()">Đăng nhập</a>
           <a *ngIf="!loggedIn" routerLink="/register" routerLinkActive="active" class="nav-auth mobile-only" (click)="closeMenu()">Đăng ký</a>
-          <button *ngIf="loggedIn" class="btn-ghost mobile-only" (click)="logout()">Đăng xuất</button>
+          <button *ngIf="loggedIn" type="button" class="btn-ghost mobile-only" (click)="logout()">Đăng xuất</button>
         </nav>
         <div class="shop-actions desktop-only">
           <a *ngIf="!loggedIn" routerLink="/login" class="btn-primary header-cta">Đăng nhập</a>
           <a *ngIf="!loggedIn" routerLink="/register" class="btn-primary header-cta">Đăng ký</a>
-          <button *ngIf="loggedIn" class="btn-primary header-cta" (click)="logout()">Đăng xuất</button>
+          <button *ngIf="loggedIn" type="button" class="btn-primary header-cta" (click)="logout()">Đăng xuất</button>
         </div>
+        <button class="menu-toggle" type="button" (click)="toggleMenu(); $event.stopPropagation()" [attr.aria-expanded]="menuOpen" [attr.aria-label]="menuOpen ? 'Đóng menu' : 'Mở menu'">☰</button>
       </div>
     </header>
-    <main class="shop-main">
+    <div class="shop-header-spacer" aria-hidden="true"></div>
+    <main class="shop-main" (click)="closeMenu()">
       <router-outlet></router-outlet>
     </main>
     <footer class="shop-footer">
@@ -53,6 +55,12 @@ export class CustomerLayoutComponent implements OnInit {
   get isStaff() { return this.auth.hasRole('ADMIN', 'MANAGER', 'STAFF'); }
   get isAccount() { return this.router.url.startsWith('/account'); }
   closeMenu() { this.menuOpen = false; }
+  toggleMenu() { this.menuOpen = !this.menuOpen; }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    if (this.menuOpen) this.closeMenu();
+  }
   logout() {
     this.auth.logout();
     this.cart.clearCount();

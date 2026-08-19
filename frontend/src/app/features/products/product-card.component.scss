@@ -170,16 +170,79 @@
   }
 }
 
-@media (max-width: 430px) {
+@media (max-width: 900px) {
   .thumb {
-    height: 150px;
+    height: 124px;
   }
 
   .thumb img {
-    max-height: 150px;
+    max-height: 124px;
+  }
+
+  .wish-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    top: 6px;
+    right: 6px;
+  }
+
+  .info {
+    padding: 8px;
+  }
+
+  .brand {
+    font-size: 11px;
+  }
+
+  .name h3 {
+    font-size: 12px;
+    min-height: 32px;
+    margin: 2px 0 4px;
+  }
+
+  .spec {
+    font-size: 11px;
+  }
+
+  .price-row {
+    margin-top: 4px;
+    gap: 4px;
+  }
+
+  .price-row strong {
+    font-size: 13px;
+  }
+
+  .price-row s {
+    font-size: 11px;
+  }
+
+  .discount {
+    font-size: 10px;
+    padding: 1px 4px;
   }
 
   .card-actions {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 4px;
+    padding-top: 8px;
+  }
+
+  .card-actions .btn-outline,
+  .card-actions .btn-primary {
+    min-height: 34px;
+    padding: 4px 4px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 430px) {
+  .thumb {
+    height: 112px;
+  }
+
+  .thumb img {
+    max-height: 112px;
   }
 }
