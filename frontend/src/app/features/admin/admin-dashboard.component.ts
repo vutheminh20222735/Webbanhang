@@ -75,7 +75,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           this.categoryData = data.categoryData || [];
           this.topProducts = (data.topProducts || []).map((p: any) => ({
             ...p,
-            quantity: p.quantity ?? p.qty ?? p.sold ?? 0,
+            quantity: p.quantity ?? p.qty ?? 0,
             revenue: p.revenue ?? 0
           }));
           this.ordersByStatus = data.ordersByStatus || [];
@@ -86,7 +86,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         },
         (err) => {
           console.error('Failed to load dashboard', err);
-          this.loadError = err.error?.message || 'Không tải được dashboard';
+          const msg = err.error?.message || 'Không tải được dashboard';
+          this.loadError =
+            msg === 'Invalid token' || msg === 'No token'
+              ? 'Phiên đăng nhập không hợp lệ với API local. Hãy đăng xuất và đăng nhập lại (backend đang chạy tại port 5000).'
+              : msg;
           this.isLoading = false;
         }
       );

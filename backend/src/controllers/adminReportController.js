@@ -84,7 +84,7 @@ exports.dashboard = async (req, res, next) => {
             { $sort: { _id: 1 } }
           ],
           topProducts: [
-            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            { $match: { orderStatus: 'DELIVERED' } },
             { $unwind: '$items' },
             {
               $group: {
@@ -267,8 +267,16 @@ exports.topProducts = async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit || '5');
     const agg = await Order.aggregate([
+      { $match: { orderStatus: 'DELIVERED' } },
       { $unwind: '$items' },
-      { $group: { _id: '$items.product', qty: { $sum: '$items.quantity' } } },
+      {
+        $group: {
+          _id: '$items.product',
+          name: { $first: '$items.name' },
+          qty: { $sum: '$items.quantity' },
+          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        }
+      },
       { $sort: { qty: -1 } },
       { $limit: limit }
     ]);

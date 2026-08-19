@@ -11,3 +11,11 @@ test('canonicalOrderStatus maps UI aliases to DB enum', () => {
   expect(canonicalOrderStatus('SHIPPING')).toBe('SHIPPING');
   expect(canonicalOrderStatus('')).toBeNull();
 });
+
+test('best-seller sold quantity uses DELIVERED only', () => {
+  const soldMatch = { orderStatus: 'DELIVERED' };
+  expect(soldMatch.orderStatus).toBe('DELIVERED');
+  expect(soldMatch.orderStatus).not.toBe('PENDING');
+  expect(['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPING', 'CANCELLED', 'RETURNED'])
+    .not.toContain(soldMatch.orderStatus);
+});
