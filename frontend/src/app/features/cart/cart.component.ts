@@ -141,9 +141,10 @@ export class CartComponent implements OnInit {
         this.selectedIds.delete(this.itemId(it));
         this.load();
       },
-      error: () => {
+      error: (err) => {
         this.busy = false;
-        this.message = 'Không xóa được sản phẩm';
+        this.message = err.error?.message || 'Không xóa được sản phẩm';
+        this.load(false);
       }
     });
   }
