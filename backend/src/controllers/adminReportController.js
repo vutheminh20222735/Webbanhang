@@ -6,6 +6,8 @@ const { ORDER_STATUSES } = require('../utils/orderStatus');
 
 const TZ = 'Asia/Ho_Chi_Minh';
 const LOW_STOCK_THRESHOLD = 10;
+/** Doanh thu thực tế = đơn đã giao */
+const REVENUE_ORDER_STATUS = 'DELIVERED';
 
 function formatDateVN(date) {
   return new Intl.DateTimeFormat('en-CA', {
@@ -60,7 +62,7 @@ exports.dashboard = async (req, res, next) => {
                 _id: null,
                 totalOrders: { $sum: 1 },
                 revenue: {
-                  $sum: { $cond: [{ $ne: ['$orderStatus', 'CANCELLED'] }, '$total', 0] }
+                  $sum: { $cond: [{ $eq: ['$orderStatus', REVENUE_ORDER_STATUS] }, '$total', 0] }
                 },
                 delivered: {
                   $sum: { $cond: [{ $eq: ['$orderStatus', 'DELIVERED'] }, 1, 0] }
@@ -72,7 +74,7 @@ exports.dashboard = async (req, res, next) => {
             { $group: { _id: '$orderStatus', count: { $sum: 1 } } }
           ],
           byDay: [
-            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            { $match: { orderStatus: REVENUE_ORDER_STATUS } },
             {
               $group: {
                 _id: {
@@ -84,7 +86,7 @@ exports.dashboard = async (req, res, next) => {
             { $sort: { _id: 1 } }
           ],
           topProducts: [
-            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            { $match: { orderStatus: 'DELIVERED' } },
             { $unwind: '$items' },
             {
               $group: {
@@ -113,7 +115,7 @@ exports.dashboard = async (req, res, next) => {
             }
           ],
           categories: [
-            { $match: { orderStatus: { $ne: 'CANCELLED' } } },
+            { $match: { orderStatus: REVENUE_ORDER_STATUS } },
             { $unwind: '$items' },
             {
               $lookup: {
@@ -146,16 +148,19 @@ exports.dashboard = async (req, res, next) => {
     ]);
 
     const [todayAgg] = await Order.aggregate([
-      { $match: { createdAt: { $gte: todayStart } } },
+      { $match: { createdAt: { $gte: todayStart }, orderStatus: REVENUE_ORDER_STATUS } },
       {
         $group: {
           _id: null,
           todayOrders: { $sum: 1 },
-          todayRevenue: {
-            $sum: { $cond: [{ $ne: ['$orderStatus', 'CANCELLED'] }, '$total', 0] }
-          }
+          todayRevenue: { $sum: '$total' }
         }
       }
+    ]);
+
+    const [todayOrdersAgg] = await Order.aggregate([
+      { $match: { createdAt: { $gte: todayStart }, orderStatus: { $ne: 'CANCELLED' } } },
+      { $group: { _id: null, count: { $sum: 1 } } }
     ]);
 
     const totals = (facet && facet.totals[0]) || { totalOrders: 0, revenue: 0, delivered: 0 };
@@ -216,7 +221,8 @@ exports.dashboard = async (req, res, next) => {
         totalProducts,
         successRate,
         todayRevenue: (todayAgg && todayAgg.todayRevenue) || 0,
-        todayOrders: (todayAgg && todayAgg.todayOrders) || 0,
+        todayOrders: (todayOrdersAgg && todayOrdersAgg.count) || 0,
+        todayDelivered: (todayAgg && todayAgg.todayOrders) || 0,
         revenueChart,
         ordersByStatus,
         topProducts,
@@ -267,8 +273,16 @@ exports.topProducts = async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit || '5');
     const agg = await Order.aggregate([
+      { $match: { orderStatus: 'DELIVERED' } },
       { $unwind: '$items' },
-      { $group: { _id: '$items.product', qty: { $sum: '$items.quantity' } } },
+      {
+        $group: {
+          _id: '$items.product',
+          name: { $first: '$items.name' },
+          qty: { $sum: '$items.quantity' },
+          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        }
+      },
       { $sort: { qty: -1 } },
       { $limit: limit }
     ]);

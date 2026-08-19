@@ -41,7 +41,8 @@ exports.updateItem = async (req, res, next) => {
     if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
     const item = cart.items.id(itemId);
     if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
-    if (quantity <= 0) item.remove(); else item.quantity = quantity;
+    if (quantity <= 0) cart.items.pull(item._id);
+    else item.quantity = quantity;
     cart.updatedAt = Date.now();
     await cart.save();
     res.json({ success: true, data: cart });
@@ -53,10 +54,13 @@ exports.removeItem = async (req, res, next) => {
     const { itemId } = req.params;
     const cart = await Cart.findOne({ user: req.user.id });
     if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
-    cart.items.id(itemId).remove();
+    const item = cart.items.id(itemId);
+    if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
+    cart.items.pull(item._id);
     cart.updatedAt = Date.now();
     await cart.save();
-    res.json({ success: true, data: cart });
+    const cartOut = await Cart.findById(cart._id).populate('items.product');
+    res.json({ success: true, data: cartOut });
   } catch (err) { next(err); }
 };
 
@@ -194,7 +198,7 @@ exports.checkout = async (req, res, next) => {
     try {
       for (const id of requestedIds) {
         const sub = cart.items.id(id);
-        if (sub) sub.remove();
+        if (sub) cart.items.pull(sub._id);
       }
       cart.updatedAt = Date.now();
       await cart.save();
