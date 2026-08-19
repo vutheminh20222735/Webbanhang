@@ -77,6 +77,13 @@
   font-size: 12px;
 }
 
+.stock.soldout {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.ok { color: #15803d; }
+
 .qty-label {
   display: block;
   margin-top: 12px;

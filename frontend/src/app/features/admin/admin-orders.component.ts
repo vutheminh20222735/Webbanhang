@@ -1,7 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { OrderService } from '../../core/services/order.service';
 import { AuthService } from '../../core/services/auth.service';
+import {
+  ORDER_STATUSES,
+  canonicalOrderStatus,
+  nextOrderStatuses,
+  orderStatusClass,
+  orderStatusColor,
+  orderStatusLabel
+} from '../../core/utils/order-status';
 
 @Component({
   templateUrl: './admin-orders.component.html',
@@ -11,7 +18,7 @@ export class AdminOrdersComponent implements OnInit {
   orders: any[] = [];
   allOrders: any[] = [];
   selectedOrder: any = null;
-  statuses = ['pending', 'confirmed', 'preparing', 'shipping', 'delivered', 'canceled', 'returned'];
+  statuses = ORDER_STATUSES;
   filterStatus = '';
   searchQuery = '';
   isLoading = false;
@@ -19,19 +26,23 @@ export class AdminOrdersComponent implements OnInit {
   message = '';
   messageType: 'success' | 'error' = 'success';
 
-  constructor(private http: HttpClient, public auth: AuthService) {}
+  constructor(private ordersApi: OrderService, public auth: AuthService) {}
 
   ngOnInit() {
     this.load();
   }
 
-  load() {
-    this.isLoading = true;
-    this.http.get(`${environment.apiUrl}/orders?limit=100`).subscribe(
+  load(keepSelectedId?: string, showSpinner = true) {
+    if (showSpinner) this.isLoading = true;
+    this.ordersApi.list({ limit: 100 }).subscribe(
       (res: any) => {
         this.allOrders = res.data?.items || [];
         this.applyFilters();
         this.isLoading = false;
+        if (keepSelectedId) {
+          const fresh = this.allOrders.find((o) => String(o._id) === String(keepSelectedId));
+          if (fresh) this.selectedOrder = fresh;
+        }
       },
       (err) => {
         console.error('Failed to load orders', err);
@@ -44,7 +55,9 @@ export class AdminOrdersComponent implements OnInit {
     let filtered = [...this.allOrders];
 
     if (this.filterStatus) {
-      filtered = filtered.filter((o) => (o.orderStatus || 'pending').toLowerCase() === this.filterStatus.toLowerCase());
+      filtered = filtered.filter(
+        (o) => canonicalOrderStatus(o.orderStatus) === canonicalOrderStatus(this.filterStatus)
+      );
     }
 
     if (this.searchQuery) {
@@ -61,8 +74,23 @@ export class AdminOrdersComponent implements OnInit {
     this.orders = filtered;
   }
 
+  countByStatus(status: string): number {
+    return (this.allOrders || []).filter(
+      (o) => canonicalOrderStatus(o.orderStatus) === canonicalOrderStatus(status)
+    ).length;
+  }
+
   selectOrder(order: any) {
     this.selectedOrder = order;
+    this.ordersApi.get(order._id).subscribe(
+      (res: any) => {
+        if (res?.data) {
+          this.selectedOrder = res.data;
+          this.patchLocal(res.data);
+        }
+      },
+      () => {}
+    );
   }
 
   closeDetail() {
@@ -70,65 +98,56 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   updateOrderStatus(order: any, newStatus: string) {
-    if (order.orderStatus === newStatus) return;
+    const next = canonicalOrderStatus(newStatus);
+    if (canonicalOrderStatus(order.orderStatus) === next) return;
 
     this.isUpdating = true;
-    this.http
-      .put(`${environment.apiUrl}/orders/${order._id}/status`, { orderStatus: newStatus })
-      .subscribe(
-        (res: any) => {
-          this.isUpdating = false;
-          this.showMessage('Cập nhật trạng thái thành công', 'success');
-          order.orderStatus = newStatus;
-          this.load();
-        },
-        (err) => {
-          this.isUpdating = false;
-          this.showMessage('Cập nhật thất bại: ' + (err.error?.message || err.message), 'error');
+    this.ordersApi.updateStatus(order._id, next).subscribe(
+      (res: any) => {
+        this.isUpdating = false;
+        const updated = res?.data;
+        const savedStatus = canonicalOrderStatus(updated?.orderStatus || next);
+        if (updated) {
+          this.patchLocal(updated);
+          this.selectedOrder = updated;
+        } else {
+          order.orderStatus = savedStatus;
+          if (this.selectedOrder && this.selectedOrder._id === order._id) {
+            this.selectedOrder = { ...this.selectedOrder, orderStatus: savedStatus };
+          }
         }
-      );
+        this.showMessage('Cập nhật trạng thái thành công', 'success');
+        this.load(order._id, false);
+      },
+      (err) => {
+        this.isUpdating = false;
+        this.showMessage('Cập nhật thất bại: ' + (err.error?.message || err.message), 'error');
+      }
+    );
+  }
+
+  patchLocal(updated: any) {
+    if (!updated?._id) return;
+    const apply = (list: any[]) =>
+      list.map((o) => (String(o._id) === String(updated._id) ? { ...o, ...updated } : o));
+    this.allOrders = apply(this.allOrders);
+    this.applyFilters();
   }
 
   getStatusLabel(status: string | undefined): string {
-    if (!status) return 'Chờ xác nhận';
-    const statusMap: { [key: string]: string } = {
-      pending: 'Chờ xác nhận',
-      confirmed: 'Đã xác nhận',
-      preparing: 'Đang chuẩn bị',
-      shipping: 'Đang giao',
-      delivered: 'Đã giao',
-      canceled: 'Đã hủy',
-      returned: 'Trả hàng'
-    };
-    return statusMap[status.toLowerCase()] || status;
+    return orderStatusLabel(status);
   }
 
   getStatusColor(status: string | undefined): string {
-    if (!status) return '#fbbf24';
-    const colorMap: { [key: string]: string } = {
-      pending: '#fbbf24',
-      confirmed: '#3b82f6',
-      preparing: '#8b5cf6',
-      shipping: '#10b981',
-      delivered: '#059669',
-      canceled: '#ef4444',
-      returned: '#f97316'
-    };
-    return colorMap[status.toLowerCase()] || '#6b7280';
+    return orderStatusColor(status);
+  }
+
+  getStatusClass(status: string | undefined): string {
+    return orderStatusClass(status);
   }
 
   getNextStatuses(currentStatus: string | undefined): string[] {
-    const current = (currentStatus || 'pending').toLowerCase();
-    const transitions: { [key: string]: string[] } = {
-      pending: ['confirmed', 'canceled'],
-      confirmed: ['preparing', 'canceled'],
-      preparing: ['shipping', 'canceled'],
-      shipping: ['delivered', 'returned'],
-      delivered: ['returned'],
-      canceled: [],
-      returned: []
-    };
-    return transitions[current] || [];
+    return nextOrderStatuses(currentStatus);
   }
 
   showMessage(msg: string, type: 'success' | 'error') {
@@ -139,4 +158,3 @@ export class AdminOrdersComponent implements OnInit {
     }, 5000);
   }
 }
-

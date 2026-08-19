@@ -8,7 +8,7 @@
         <option value="90days">90 ngày</option>
         <option value="all">Tất cả</option>
       </select>
-      <div class="export-buttons">
+      <div class="export-buttons" *ngIf="canExport">
         <button class="btn-secondary" (click)="exportReport('csv')">📥 CSV</button>
         <button class="btn-secondary" (click)="exportReport('excel')">📥 Excel</button>
         <button class="btn-secondary" (click)="exportReport('pdf')">📥 PDF</button>
@@ -18,6 +18,7 @@
 
   <!-- Loading -->
   <div class="loading" *ngIf="isLoading">Đang tải dữ liệu...</div>
+  <div class="load-error" *ngIf="!isLoading && loadError">{{ loadError }}</div>
 
   <div *ngIf="!isLoading">
     <!-- KPI Cards -->
@@ -49,20 +50,23 @@
       <!-- Revenue Chart -->
       <div class="chart-card">
         <h3>Doanh thu theo thời gian</h3>
-        <canvas id="revenueChart" height="80"></canvas>
+        <div class="chart-wrap">
+          <canvas id="revenueChart"></canvas>
+        </div>
       </div>
 
-      <!-- Status Chart -->
       <div class="chart-card">
         <h3>Trạng thái đơn hàng</h3>
-        <canvas id="statusChart" height="80"></canvas>
+        <div class="chart-wrap">
+          <canvas id="statusChart"></canvas>
+        </div>
       </div>
     </div>
 
     <!-- Status Breakdown -->
     <div class="status-breakdown">
       <h3>Phân tích trạng thái đơn hàng</h3>
-      <div class="status-items">
+      <div class="status-items" *ngIf="ordersByStatus.length; else emptyStatus">
         <div class="status-item" *ngFor="let item of ordersByStatus">
           <div class="status-info">
             <span class="status-name">{{ getStatusLabel(item.status) }}</span>
@@ -76,6 +80,9 @@
           <div class="status-percent">{{ getPercentage(item.count) | number: '1.0-0' }}%</div>
         </div>
       </div>
+      <ng-template #emptyStatus>
+        <p class="empty">Chưa có đơn hàng trong khoảng thời gian này.</p>
+      </ng-template>
     </div>
 
     <!-- Top Products & Low Stock -->
@@ -88,8 +95,8 @@
             <thead>
               <tr>
                 <th>Sản phẩm</th>
-                <th>Sold</th>
-                <th>Revenue</th>
+                <th>Đã bán</th>
+                <th>Doanh thu</th>
               </tr>
             </thead>
             <tbody>
@@ -122,7 +129,7 @@
               <tr *ngFor="let l of lowStock" [class.critical]="l.stock <= 5">
                 <td>{{ l.name }}</td>
                 <td>{{ l.stock }}</td>
-                <td><span class="alert-badge" *ngIf="l.stock <= 5">Rất ít</span></td>
+                <td><span class="alert-badge" *ngIf="l.stock <= 5">Rất ít</span><span *ngIf="l.stock > 5">Dưới {{ lowStockThreshold }}</span></td>
               </tr>
               <tr *ngIf="lowStock.length === 0">
                 <td colspan="3" class="empty">Đủ hàng</td>

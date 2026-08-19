@@ -1,39 +1,36 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
+import { orderStatusColor, orderStatusLabel } from '../../core/utils/order-status';
 import Chart from 'chart.js/auto';
 
 @Component({
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
-export class AdminDashboardComponent implements OnInit, AfterViewInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   isLoading = false;
+  loadError = '';
 
-  // KPI Cards
   totalRevenue = 0;
   totalOrders = 0;
   totalCustomers = 0;
   totalProducts = 0;
   successRate = 0;
-
-  // Today
   todayRevenue = 0;
   todayOrders = 0;
+  lowStockThreshold = 10;
 
-  // Charts
   revenueChart: any;
   statusChart: any;
 
-  // Data
   topProducts: any[] = [];
   lowStock: any[] = [];
   ordersByStatus: any[] = [];
   categoryData: any[] = [];
   revenueData: any[] = [];
 
-  // Time Range
   selectedRange = '30days';
 
   constructor(private http: HttpClient, public auth: AuthService) {}
@@ -42,44 +39,54 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     return this.auth.hasRole('ADMIN', 'MANAGER');
   }
 
+  get canExport() {
+    return this.auth.hasRole('ADMIN');
+  }
+
   ngOnInit() {
     if (!this.canReport) return;
     this.loadAllData();
   }
 
-  ngAfterViewInit() {
-    if (!this.canReport) return;
-    setTimeout(() => {
-      this.renderCharts();
-    }, 100);
+  ngOnDestroy() {
+    this.revenueChart?.destroy();
+    this.statusChart?.destroy();
   }
 
   loadAllData() {
     this.isLoading = true;
+    this.loadError = '';
     this.http
       .get(`${environment.apiUrl}/admin/dashboard?range=${this.selectedRange}`)
       .subscribe(
         (res: any) => {
           const data = res.data || {};
 
-          this.totalRevenue = data.totalRevenue || 0;
-          this.totalOrders = data.totalOrders || 0;
-          this.totalCustomers = data.totalCustomers || 0;
-          this.totalProducts = data.totalProducts || 0;
-          this.successRate = data.successRate || 0;
-          this.todayRevenue = data.todayRevenue || 0;
-          this.todayOrders = data.todayOrders || 0;
+          this.totalRevenue = Number(data.totalRevenue || 0);
+          this.totalOrders = Number(data.totalOrders || 0);
+          this.totalCustomers = Number(data.totalCustomers || 0);
+          this.totalProducts = Number(data.totalProducts || 0);
+          this.successRate = Number(data.successRate || 0);
+          this.todayRevenue = Number(data.todayRevenue || 0);
+          this.todayOrders = Number(data.todayOrders || 0);
+          this.lowStockThreshold = Number(data.lowStockThreshold || 10);
 
-          this.revenueData = data.revenueChart || [];
+          this.revenueData = data.revenueChart || data.revenueData || [];
           this.categoryData = data.categoryData || [];
-          this.topProducts = data.topProducts || [];
+          this.topProducts = (data.topProducts || []).map((p: any) => ({
+            ...p,
+            quantity: p.quantity ?? p.qty ?? p.sold ?? 0,
+            revenue: p.revenue ?? 0
+          }));
           this.ordersByStatus = data.ordersByStatus || [];
+          this.lowStock = data.lowStock || [];
 
           this.isLoading = false;
-          this.renderCharts();
+          setTimeout(() => this.renderCharts(), 0);
         },
         (err) => {
           console.error('Failed to load dashboard', err);
+          this.loadError = err.error?.message || 'Không tải được dashboard';
           this.isLoading = false;
         }
       );
@@ -95,7 +102,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     if (!element) return;
 
     const labels = this.revenueData.map((d) => d.date || d.label);
-    const data = this.revenueData.map((d) => d.total || d.value);
+    const data = this.revenueData.map((d) => Number(d.total || d.value || 0));
 
     if (this.revenueChart) this.revenueChart.destroy();
 
@@ -112,28 +119,25 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
             backgroundColor: 'rgba(37, 99, 235, 0.1)',
             fill: true,
             tension: 0.4,
-            pointRadius: 4,
+            pointRadius: labels.length > 40 ? 0 : 3,
             pointBackgroundColor: '#2563eb'
           }
         ]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: true,
-            labels: {
-              usePointStyle: true,
-              padding: 15
-            }
+            labels: { usePointStyle: true, padding: 15 }
           }
         },
         scales: {
           y: {
             beginAtZero: true,
             ticks: {
-              callback: (value: any) => value.toLocaleString('vi-VN') + ' ₫'
+              callback: (value: any) => Number(value).toLocaleString('vi-VN') + ' ₫'
             }
           }
         }
@@ -145,9 +149,11 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     const element = document.getElementById('statusChart') as HTMLCanvasElement;
     if (!element) return;
 
-    const labels = this.ordersByStatus.map((s) => this.getStatusLabel(s.status));
-    const data = this.ordersByStatus.map((s) => s.count);
-    const colors = this.ordersByStatus.map((s) => this.getStatusColor(s.status));
+    const rows = (this.ordersByStatus || []).filter((s) => Number(s.count || 0) > 0);
+    const source = rows.length ? rows : this.ordersByStatus;
+    const labels = source.map((s) => this.getStatusLabel(s.status));
+    const data = source.map((s) => Number(s.count || 0));
+    const colors = source.map((s) => this.getStatusColor(s.status));
 
     if (this.statusChart) this.statusChart.destroy();
 
@@ -167,42 +173,24 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: {
-            position: 'bottom' as any
-          }
+          legend: { position: 'bottom' as any }
         }
       }
     });
   }
 
   getStatusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      pending: 'Chờ xác nhận',
-      confirmed: 'Đã xác nhận',
-      preparing: 'Đang chuẩn bị',
-      shipping: 'Đang giao',
-      delivered: 'Đã giao',
-      canceled: 'Đã hủy'
-    };
-    return labels[status?.toLowerCase()] || status;
+    return orderStatusLabel(status);
   }
 
   getStatusColor(status: string): string {
-    const colors: { [key: string]: string } = {
-      pending: '#fbbf24',
-      confirmed: '#3b82f6',
-      preparing: '#8b5cf6',
-      shipping: '#10b981',
-      delivered: '#059669',
-      canceled: '#ef4444'
-    };
-    return colors[status?.toLowerCase()] || '#6b7280';
+    return orderStatusColor(status);
   }
 
   exportReport(format: 'csv' | 'pdf' | 'excel') {
-    const url = `${environment.apiUrl}/admin/export?format=${format}&range=${this.selectedRange}`;
+    const url = `${environment.apiUrl}/admin/reports/export?format=${format}&type=${format}&range=${this.selectedRange}`;
     window.location.href = url;
   }
 
@@ -211,7 +199,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   }
 
   getTotalOrders(): number {
-    return (this.ordersByStatus || []).reduce((sum, item) => sum + (item.count || 0), 0);
+    return (this.ordersByStatus || []).reduce((sum, item) => sum + Number(item.count || 0), 0);
   }
 
   getPercentage(count: number): number {

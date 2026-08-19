@@ -1,69 +1,62 @@
 <h1>Giỏ hàng</h1>
+<p class="error" *ngIf="message">{{ message }}</p>
 
 <div *ngIf="cart?.items?.length; else empty" class="cart-container">
-
-  <!-- Chọn tất cả -->
   <div class="cart-select-all">
     <label>
-      <input
-        type="checkbox"
-        [checked]="isAllSelected()"
-        (change)="toggleAll()"
-      />
+      <input type="checkbox" [checked]="isAllSelected()" (change)="toggleAll()" />
       Chọn tất cả
     </label>
-
-    <span>
-      Đã chọn {{ selectedItems.length }}/{{ cart.items.length }}
-    </span>
+    <span>Đã chọn {{ selectedItems().length }}/{{ cart.items.length }}</span>
   </div>
 
-  <!-- Danh sách sản phẩm -->
-  <div
-    class="cart-item"
-    *ngFor="let it of cart.items"
-    [class.selected]="isSelected(it)"
-  >
+  <div class="cart-item" *ngFor="let it of cart.items" [class.selected]="isSelected(it)">
+    <input type="checkbox" class="item-checkbox" [checked]="isSelected(it)" (change)="toggleItem(it)" />
 
-    <input
-      type="checkbox"
-      class="item-checkbox"
-      [checked]="isSelected(it)"
-      (change)="toggleItem(it)"
-    />
+    <a [routerLink]="['/product', it.product?._id || it.product]" class="item-thumb">
+      <img [src]="imageOf(it)" [alt]="nameOf(it)" />
+    </a>
 
     <div class="item-info">
-      <strong>{{ it.name || it.product?.name }}</strong>
-      <p>Số lượng: {{ it.quantity }}</p>
+      <a [routerLink]="['/product', it.product?._id || it.product]"><strong>{{ nameOf(it) }}</strong></a>
+      <p class="muted">{{ priceOf(it) | number }}₫ / máy</p>
+      <p class="muted" *ngIf="stockOf(it) <= 5">Còn {{ stockOf(it) }} máy</p>
     </div>
 
-    <span class="item-price">
-      {{ ((it.priceAt || it.price || 0) * it.quantity) | number }}₫
-    </span>
+    <div class="qty-control">
+      <button type="button" (click)="decrease(it)" [disabled]="busy || it.quantity <= 1" aria-label="Giảm">−</button>
+      <input
+        type="number"
+        [ngModel]="it.quantity"
+        (change)="onQtyInput(it, $event)"
+        min="1"
+        [max]="stockOf(it)"
+        [disabled]="busy"
+      />
+      <button type="button" (click)="increase(it)" [disabled]="busy || it.quantity >= stockOf(it)" aria-label="Tăng">+</button>
+    </div>
 
+    <span class="item-price">{{ (priceOf(it) * it.quantity) | number }}₫</span>
+    <button type="button" class="btn-remove" (click)="remove(it)" [disabled]="busy">Xóa</button>
   </div>
 
-  <!-- Tổng -->
   <div class="cart-summary">
-    <span>Tổng tiền:</span>
-
-    <strong>
-      {{ getSelectedTotal() | number }}₫
-    </strong>
+    <div>
+      <span>Tạm tính giỏ: {{ getCartTotal() | number }}₫</span>
+      <strong>Tổng đã chọn: {{ getSelectedTotal() | number }}₫</strong>
+    </div>
+    <div class="summary-actions">
+      <button type="button" class="btn-outline" (click)="continueShopping()">Tiếp tục mua</button>
+      <button type="button" class="btn-primary" [disabled]="selectedItems().length === 0 || busy" (click)="goToCheckout()">
+        Thanh toán
+      </button>
+    </div>
   </div>
-
-  <button
-    type="button"
-    class="btn-primary"
-    [disabled]="selectedItems.length === 0"
-    (click)="goToCheckout()"
-  >
-    Thanh toán
-  </button>
-
 </div>
 
 <ng-template #empty>
-  <p class="muted">Giỏ hàng trống.</p>
-  <a routerLink="/" class="btn-primary">Mua điện thoại</a>
+  <div class="empty-cart">
+    <p class="muted">Giỏ hàng trống.</p>
+    <a routerLink="/" class="btn-primary">Mua điện thoại</a>
+  </div>
 </ng-template>

@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { OrderService } from '../../core/services/order.service';
+import {
+  canonicalOrderStatus,
+  orderStatusClass,
+  orderStatusLabel,
+  orderTimeline
+} from '../../core/utils/order-status';
 
 @Component({
   templateUrl: './orders.component.html',
@@ -10,30 +15,49 @@ export class OrdersComponent implements OnInit {
   orders: any[] = [];
   selectedOrder: any = null;
   isCanceling = false;
+  isLoading = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private ordersApi: OrderService) {}
 
   ngOnInit() {
     this.loadOrders();
   }
 
-  loadOrders() {
-    this.http.get(`${environment.apiUrl}/orders`).subscribe(
+  loadOrders(keepSelectedId?: string) {
+    this.isLoading = true;
+    this.ordersApi.list({ limit: 100 }).subscribe(
       (res: any) => {
         this.orders = res.data?.items || [];
+        this.isLoading = false;
+        if (keepSelectedId) {
+          const fresh = this.orders.find((o) => String(o._id) === String(keepSelectedId));
+          if (fresh) this.selectedOrder = fresh;
+        }
       },
       (err) => {
         console.error('Failed to load orders', err);
+        this.isLoading = false;
       }
     );
   }
 
   selectOrder(order: any) {
-    this.selectedOrder = order;
+    this.viewDetail(order);
   }
 
   viewDetail(order: any) {
     this.selectedOrder = order;
+    this.ordersApi.get(order._id).subscribe(
+      (res: any) => {
+        if (res?.data) {
+          this.selectedOrder = res.data;
+          this.orders = this.orders.map((o) =>
+            String(o._id) === String(res.data._id) ? { ...o, ...res.data } : o
+          );
+        }
+      },
+      () => {}
+    );
   }
 
   closeDetail() {
@@ -41,8 +65,8 @@ export class OrdersComponent implements OnInit {
   }
 
   canCancel(order: any): boolean {
-    const status = order.orderStatus?.toLowerCase() || '';
-    return ['pending', 'confirmed'].includes(status);
+    const status = canonicalOrderStatus(order?.orderStatus);
+    return status === 'PENDING' || status === 'CONFIRMED';
   }
 
   cancelOrder(order: any) {
@@ -51,33 +75,29 @@ export class OrdersComponent implements OnInit {
     }
 
     this.isCanceling = true;
-    this.http
-      .post(`${environment.apiUrl}/orders/${order._id}/cancel`, {})
-      .subscribe(
-        (res: any) => {
-          this.isCanceling = false;
-          alert('Hủy đơn hàng thành công');
-          this.loadOrders();
-          this.closeDetail();
-        },
-        (err) => {
-          this.isCanceling = false;
-          alert('Hủy đơn hàng thất bại: ' + (err.error?.message || err.message));
-        }
-      );
+    this.ordersApi.cancel(order._id).subscribe(
+      (res: any) => {
+        this.isCanceling = false;
+        alert('Hủy đơn hàng thành công');
+        this.loadOrders();
+        this.closeDetail();
+      },
+      (err) => {
+        this.isCanceling = false;
+        alert('Hủy đơn hàng thất bại: ' + (err.error?.message || err.message));
+      }
+    );
   }
 
   getStatusLabel(status: string | undefined): string {
-    if (!status) return 'Chờ xác nhận';
-    const statusMap: { [key: string]: string } = {
-      pending: 'Chờ xác nhận',
-      confirmed: 'Đã xác nhận',
-      preparing: 'Đang chuẩn bị',
-      shipping: 'Đang giao',
-      delivered: 'Đã giao',
-      canceled: 'Đã hủy',
-      returned: 'Trả hàng'
-    };
-    return statusMap[status.toLowerCase()] || status;
+    return orderStatusLabel(status);
+  }
+
+  getStatusClass(status: string | undefined): string {
+    return orderStatusClass(status);
+  }
+
+  getTimeline(status: string | undefined) {
+    return orderTimeline(status);
   }
 }

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { PaymentService } from '../../core/services/payment.service';
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
+import { AddressService } from '../../core/services/address.service';
 
 @Component({
   templateUrl: './checkout.component.html',
@@ -29,11 +30,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   couponCode = '';
   appliedCoupon: any = null;
+  shipping = { name: '', email: '', phone: '', line1: '', city: '', district: '' };
 
   constructor(
     private cart: CartService,
     private router: Router,
-    private pay: PaymentService
+    private pay: PaymentService,
+    private addresses: AddressService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -76,6 +79,19 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
       this.calculateSubtotal();
       this.calculateTotal();
+      this.addresses.load().subscribe((items) => {
+        const def = items.find((a) => a.isDefault) || items[0];
+        if (def) {
+          this.shipping = {
+            name: def.name || '',
+            email: this.shipping.email,
+            phone: def.phone || '',
+            line1: def.line1 || '',
+            city: def.city || '',
+            district: def.district || ''
+          };
+        }
+      });
 
     } catch (error) {
 
@@ -100,7 +116,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       (total, item) => {
 
         const price =
-          Number(item.priceAt || item.price || 0);
+          Number(item.priceAt || item.price || item.product?.salePrice || item.product?.price || 0);
 
         const quantity =
           Number(item.quantity || 0);
@@ -147,7 +163,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     this.isApplyingCoupon = true;
 
-    this.cart.applyCoupon(code).subscribe({
+    this.cart.applyCoupon(code, this.subtotal).subscribe({
 
       next: (res: any) => {
 
@@ -239,6 +255,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // CHECKOUT
   // =========================
 
+  itemName(item: any): string {
+    return item?.name || item?.product?.name || item?.productId?.name || 'Sản phẩm';
+  }
+
+  itemPrice(item: any): number {
+    return Number(item?.priceAt || item?.price || item?.product?.salePrice || item?.product?.price || 0);
+  }
+
+  itemImage(item: any): string {
+    return item?.product?.images?.[0] || item?.productId?.image || item?.image || 'assets/placeholder.png';
+  }
+
   onCheckout(e: Event): void {
 
     e.preventDefault();
@@ -253,6 +281,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         'error'
       );
 
+      return;
+    }
+
+    const itemIds = this.cart.selectedItemIds(this.cartItems);
+    if (!itemIds.length) {
+      this.showMessage('Không xác định được sản phẩm trong giỏ. Vui lòng quay lại giỏ hàng.', 'error');
       return;
     }
 
@@ -273,15 +307,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     const paymentMethod =
       (fd.get('payment') as string) || 'COD';
 
-    // Payload gửi backend
     const payload = {
-      items: this.cartItems,
-
+      itemIds,
       shippingAddress,
-
       paymentMethod,
-
-      // Có mã thì gửi mã
       couponCode: this.appliedCoupon
         ? this.appliedCoupon.code
         : null
@@ -338,8 +367,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                 }
               );
 
-              this.isProcessing = false;
-
               if (error) {
 
                 alert(
@@ -347,6 +374,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                   error.message
                 );
 
+                this.isProcessing = false;
                 this.router.navigate(['/orders']);
 
               } else {
@@ -357,6 +385,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                   'checkoutItems'
                 );
 
+                this.cart.refresh();
                 this.router.navigate(['/orders']);
               }
             },
@@ -374,14 +403,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
         } else {
 
-          this.isProcessing = false;
-
-          alert('Order created');
-
           sessionStorage.removeItem(
             'checkoutItems'
           );
 
+          this.cart.refresh();
           this.router.navigate(['/orders']);
         }
       },
@@ -390,12 +416,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
         this.isProcessing = false;
 
-        alert(
-          'Checkout failed: ' +
-          (
-            err.error?.message ||
-            err.message
-          )
+        this.showMessage(
+          err.error?.message ||
+          err.message ||
+          'Đặt hàng thất bại, giỏ hàng được giữ nguyên',
+          'error'
         );
       }
 

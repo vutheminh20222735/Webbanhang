@@ -392,20 +392,26 @@
     background: #3b82f6;
   }
 
+  &.status-processing,
   &.status-preparing {
     background: #8b5cf6;
   }
 
   &.status-shipping {
-    background: #10b981;
+    background: #0ea5e9;
   }
 
   &.status-delivered {
     background: #059669;
   }
 
+  &.status-cancelled,
   &.status-canceled {
     background: #ef4444;
+  }
+
+  &.status-returned {
+    background: #f97316;
   }
 }
 
@@ -992,6 +998,11 @@
     color: #3730a3;
   }
 
+  &.status-processing {
+    background: #ede9fe;
+    color: #5b21b6;
+  }
+
   &.status-shipping {
     background: #d1fae5;
     color: #065f46;
@@ -1002,7 +1013,8 @@
     color: #166534;
   }
 
-  &.status-canceled {
+  &.status-canceled,
+  &.status-cancelled {
     background: #fee2e2;
     color: #991b1b;
   }

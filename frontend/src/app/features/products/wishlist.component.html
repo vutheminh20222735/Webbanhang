@@ -7,43 +7,17 @@
 
   <div class="wishlist-toolbar" *ngIf="wishlistItems.length > 0">
     <span class="count">{{ wishlistItems.length }} sản phẩm</span>
-    <button class="btn-danger" (click)="clearWishlist()">Xóa toàn bộ</button>
+    <button class="btn-danger" type="button" (click)="clearWishlist()">Xóa toàn bộ</button>
   </div>
 
-  <div class="wishlist-grid" *ngIf="wishlistItems.length > 0 && !isLoading">
-    <div class="wishlist-item" *ngFor="let item of wishlistItems">
-      <div class="product-card">
-        <a [routerLink]="['/product', item._id]" class="thumb">
-          <img [src]="item.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=300&q=80'" [alt]="item.name" />
-        </a>
-        <div class="info">
-          <span class="brand">{{ item.brand }}</span>
-          <a [routerLink]="['/product', item._id]" class="name">
-            <h3>{{ item.name }}</h3>
-          </a>
-          <p class="spec">{{ item.ram }} · {{ item.storage }} · {{ item.color }}</p>
-          <div class="price-row">
-            <strong>{{ (item.salePrice || item.price) | number }}₫</strong>
-            <s *ngIf="item.salePrice">{{ item.price | number }}₫</s>
-          </div>
-          <div class="item-actions">
-            <button class="btn-primary" [routerLink]="['/product', item._id]">
-              Xem chi tiết
-            </button>
-            <button class="btn-danger" (click)="removeFromWishlist(item._id)">
-              Xóa
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="wishlist-grid" *ngIf="wishlistItems.length > 0">
+    <app-product-card *ngFor="let item of wishlistItems" [product]="item"></app-product-card>
   </div>
 
-  <div class="empty-state" *ngIf="wishlistItems.length === 0 && !isLoading">
+  <div class="empty-state" *ngIf="wishlistItems.length === 0">
     <p class="empty-icon">♡</p>
     <p class="empty-text">Danh sách yêu thích của bạn trống.</p>
     <p class="empty-hint">Hãy thêm sản phẩm bạn thích để lưu lại!</p>
-    <a routerLink="/products" class="btn-primary">Khám phá sản phẩm</a>
+    <a routerLink="/" class="btn-primary">Khám phá sản phẩm</a>
   </div>
-
-  <div class="loading" *ngIf="isLoading">Đang tải...</div>
+</div>

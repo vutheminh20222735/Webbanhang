@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../core/services/cart.service';
+import { WishlistService } from '../../core/services/wishlist.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -8,7 +10,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class LoginComponent {
   error = '';
-  constructor(private auth: AuthService, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private auth: AuthService,
+    private cart: CartService,
+    private wishlist: WishlistService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
   onSubmit(e: Event) {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
@@ -19,6 +27,8 @@ export class LoginComponent {
       const token = res.data?.token;
       if (!token) return;
       this.auth.setToken(token);
+      this.cart.refresh();
+      this.wishlist.reload();
       const user = this.auth.getUserFromToken();
       const returnUrl = this.route.snapshot.queryParams['returnUrl'];
       if (returnUrl) this.router.navigateByUrl(returnUrl);

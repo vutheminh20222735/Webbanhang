@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { AddressService, SavedAddress } from '../../core/services/address.service';
 
 interface Address {
   _id?: string;
@@ -36,7 +35,7 @@ export class AddressManagementComponent implements OnInit {
 
   editingId: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private addressesApi: AddressService) {}
 
   ngOnInit() {
     this.loadAddresses();
@@ -44,36 +43,22 @@ export class AddressManagementComponent implements OnInit {
 
   loadAddresses() {
     this.isLoading = true;
-    this.http
-      .get(`${environment.apiUrl}/auth/addresses`)
-      .subscribe(
-        (res: any) => {
-          this.addresses = res.data?.items || [];
-          this.isLoading = false;
-        },
-        (err) => {
-          console.error('Failed to load addresses', err);
-          this.isLoading = false;
-        }
-      );
+    this.addressesApi.load().subscribe(
+      (items) => {
+        this.addresses = items;
+        this.isLoading = false;
+      },
+      () => { this.isLoading = false; }
+    );
   }
 
   toggleForm() {
     this.showForm = !this.showForm;
-    if (!this.showForm) {
-      this.resetForm();
-    }
+    if (!this.showForm) this.resetForm();
   }
 
   resetForm() {
-    this.formData = {
-      name: '',
-      phone: '',
-      line1: '',
-      city: '',
-      district: '',
-      isDefault: false
-    };
+    this.formData = { name: '', phone: '', line1: '', city: '', district: '', isDefault: false };
     this.isEditing = false;
     this.editingId = null;
   }
@@ -90,81 +75,51 @@ export class AddressManagementComponent implements OnInit {
       this.showMessage('Vui lòng điền đầy đủ thông tin', 'error');
       return;
     }
-
     this.isSaving = true;
-
-    if (this.isEditing && this.editingId) {
-      this.http
-        .put(`${environment.apiUrl}/auth/addresses/${this.editingId}`, this.formData)
-        .subscribe(
-          (res: any) => {
-            this.isSaving = false;
-            this.showMessage('Cập nhật địa chỉ thành công', 'success');
-            this.loadAddresses();
-            this.resetForm();
-            this.showForm = false;
-          },
-          (err) => {
-            this.isSaving = false;
-            this.showMessage('Cập nhật thất bại: ' + (err.error?.message || err.message), 'error');
-          }
-        );
-    } else {
-      this.http
-        .post(`${environment.apiUrl}/auth/addresses`, this.formData)
-        .subscribe(
-          (res: any) => {
-            this.isSaving = false;
-            this.showMessage('Thêm địa chỉ thành công', 'success');
-            this.loadAddresses();
-            this.resetForm();
-            this.showForm = false;
-          },
-          (err) => {
-            this.isSaving = false;
-            this.showMessage('Thêm địa chỉ thất bại: ' + (err.error?.message || err.message), 'error');
-          }
-        );
-    }
+    this.addressesApi.save({
+      ...(this.formData as SavedAddress),
+      _id: this.editingId || this.formData._id
+    }).subscribe(
+      () => {
+        this.isSaving = false;
+        this.showMessage(this.isEditing ? 'Cập nhật địa chỉ thành công' : 'Thêm địa chỉ thành công', 'success');
+        this.loadAddresses();
+        this.resetForm();
+        this.showForm = false;
+      },
+      (err) => {
+        this.isSaving = false;
+        this.showMessage('Thất bại: ' + (err.error?.message || err.message), 'error');
+      }
+    );
   }
 
   deleteAddress(address: Address) {
-    if (!confirm('Bạn chắc chắn muốn xóa địa chỉ này?')) {
-      return;
-    }
-
-    this.http
-      .delete(`${environment.apiUrl}/auth/addresses/${address._id}`)
-      .subscribe(
-        (res: any) => {
-          this.showMessage('Xóa địa chỉ thành công', 'success');
-          this.loadAddresses();
-        },
-        (err) => {
-          this.showMessage('Xóa địa chỉ thất bại: ' + (err.error?.message || err.message), 'error');
-        }
-      );
+    if (!confirm('Bạn chắc chắn muốn xóa địa chỉ này?')) return;
+    if (!address._id) return;
+    this.addressesApi.remove(address._id).subscribe(
+      () => {
+        this.showMessage('Xóa địa chỉ thành công', 'success');
+        this.loadAddresses();
+      },
+      (err) => this.showMessage('Xóa thất bại: ' + (err.error?.message || err.message), 'error')
+    );
   }
 
   setDefault(address: Address) {
-    this.http
-      .post(`${environment.apiUrl}/auth/addresses/${address._id}/set-default`, {})
-      .subscribe(
-        (res: any) => {
-          this.showMessage('Đặt làm địa chỉ mặc định thành công', 'success');
-          this.loadAddresses();
-        },
-        (err) => {
-          this.showMessage('Thất bại: ' + (err.error?.message || err.message), 'error');
-        }
-      );
+    if (!address._id) return;
+    this.addressesApi.setDefault(address._id).subscribe(
+      () => {
+        this.showMessage('Đặt làm địa chỉ mặc định thành công', 'success');
+        this.loadAddresses();
+      },
+      (err) => this.showMessage('Thất bại: ' + (err.error?.message || err.message), 'error')
+    );
   }
 
   showMessage(msg: string, type: 'success' | 'error') {
     this.message = msg;
     this.messageType = type;
-    setTimeout(() => {
-      this.message = '';
-    }, 5000);
+    setTimeout(() => { this.message = ''; }, 5000);
   }
 }
