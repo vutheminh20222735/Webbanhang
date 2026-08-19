@@ -41,7 +41,7 @@ import { WishlistService } from '../../core/services/wishlist.service';
       <p>PhoneShop — Cửa hàng điện thoại chính hãng</p>
       <p>Hotline: 1900 0000 · Hà Nội</p>
     </footer>
-    <app-chatbot></app-chatbot>
+    <app-shop-chat></app-shop-chat>
   `
 })
 export class CustomerLayoutComponent implements OnInit {

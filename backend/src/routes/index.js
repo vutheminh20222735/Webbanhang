@@ -23,5 +23,6 @@ router.use('/orders', require('./orders'));
 router.use('/admin/reports', require('./adminReports'));
 router.use('/wishlist', require('./wishlist'));
 router.use('/addresses', require('./addresses'));
+router.use('/chat', require('./chat'));
 
 module.exports = router;
