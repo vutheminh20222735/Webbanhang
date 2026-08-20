@@ -1,8 +1,66 @@
-<section class="hero">
-  <div>
-    <p class="eyebrow">Cửa hàng điện thoại</p>
-    <h1>Điện thoại chính hãng, giá tốt mỗi ngày</h1>
-    <p>iPhone, Samsung, Xiaomi, OPPO — bảo hành 12 tháng, giao hàng toàn quốc.</p>
+<section class="home-hero">
+  <div class="home-hero-main">
+    <div class="home-hero-copy">
+      <p class="home-hero-tag">Ưu đãi online</p>
+      <h1>Điện thoại chính hãng · Giá tốt mỗi ngày</h1>
+      <p>Đổi cũ lấy mới cực hời · Bảo hành 12 tháng · Giao hàng toàn quốc</p>
+      <div class="home-hero-pills">
+        <span>Giảm đến 3 triệu</span>
+        <span>Trả góp 0%</span>
+        <span>Online only</span>
+        <span>Giao nhanh 2H</span>
+      </div>
+    </div>
+    <div class="home-hero-visual" aria-hidden="true">
+      <div class="home-hero-phone"></div>
+    </div>
+  </div>
+</section>
+
+<section class="promo-strip">
+  <div class="promo-strip-item">
+    <strong>PayLater</strong>
+    <span>Hạn mức đến 40 triệu</span>
+  </div>
+  <div class="promo-strip-item">
+    <strong>Thẻ tín dụng</strong>
+    <span>Ưu đãi trả góp 0%</span>
+  </div>
+</section>
+
+<section class="promo-online">
+  <h2>Khuyến mãi online</h2>
+  <div class="promo-tabs">
+    <button type="button" class="promo-tab hot" (click)="selectedBrand=''; applyFilters()">Flash Sale</button>
+    <button type="button" class="promo-tab hot" (click)="selectedBrand=''; applyFilters()">Online Only</button>
+    <button type="button" class="promo-tab" (click)="selectedBrand=''; applyFilters()">Điện thoại</button>
+    <button type="button" class="promo-tab" *ngFor="let brand of brands.slice(0,4)" (click)="selectedBrand=brand; applyFilters()">{{ brand }}</button>
+  </div>
+</section>
+
+<section class="promo-booths">
+  <h2>Gian hàng ưu đãi</h2>
+  <div class="promo-booth-grid">
+    <article class="promo-booth booth-a">
+      <h3>Samsung Galaxy</h3>
+      <p>Ưu đãi đến 5 triệu</p>
+      <a routerLink="/" [queryParams]="{brand:'Samsung'}" class="booth-cta">Mua ngay</a>
+    </article>
+    <article class="promo-booth booth-b">
+      <h3>Chơi game mượt</h3>
+      <p>Máy mạnh trong tầm giá</p>
+      <a routerLink="/" class="booth-cta">Mua ngay</a>
+    </article>
+    <article class="promo-booth booth-c">
+      <h3>Lương về sale to</h3>
+      <p>Giảm đến 50%</p>
+      <a routerLink="/" class="booth-cta">Mua ngay</a>
+    </article>
+    <article class="promo-booth booth-d">
+      <h3>Phụ kiện online</h3>
+      <p>Giảm đến 50%++</p>
+      <a routerLink="/" class="booth-cta">Mua ngay</a>
+    </article>
   </div>
 </section>
 

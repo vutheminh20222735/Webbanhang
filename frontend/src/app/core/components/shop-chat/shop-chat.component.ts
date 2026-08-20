@@ -5,16 +5,17 @@ import { ShopChatService, ChatConversation, ChatMessage, ShopContact } from '../
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
 
-type View = 'menu' | 'chat';
-
 @Component({
   selector: 'app-shop-chat',
   templateUrl: './shop-chat.component.html',
   styleUrls: ['./shop-chat.component.scss']
 })
 export class ShopChatComponent implements OnInit, OnDestroy {
-  open = false;
-  view: View = 'menu';
+  /** Speed-dial 4 icon mở phía trên FAB */
+  menuOpen = false;
+  /** Cửa sổ chat */
+  chatOpen = false;
+  phoneTipVisible = false;
 
   contact: ShopContact | null = null;
   conversation: ChatConversation | null = null;
@@ -27,17 +28,19 @@ export class ShopChatComponent implements OnInit, OnDestroy {
   @ViewChild('msgWrap') msgWrap?: ElementRef<HTMLDivElement>;
 
   private sub = new Subscription();
+  private phoneTimer: any;
 
   constructor(public chatSvc: ShopChatService, public auth: AuthService) {}
 
   ngOnInit() {
-    this.chatSvc.getContact().subscribe((r) => { this.contact = r.data; });
+    this.chatSvc.getContact().subscribe({
+      next: (r) => { this.contact = r.data; },
+      error: () => { /* vẫn dùng fallback trong template */ }
+    });
 
-    // Lắng nghe tin nhắn mới từ socket
     this.sub.add(
       this.chatSvc.newMessage$.subscribe((evt) => {
-        if (this.conversation && evt.conversationId === this.conversation._id) {
-          // Tránh duplicate nếu tin do mình gửi qua HTTP đã được thêm
+        if (this.conversation && String(evt.conversationId) === String(this.conversation._id)) {
           const exists = this.messages.some((m: any) => m._id && m._id === (evt.message as any)._id);
           if (!exists) {
             this.messages = [...this.messages, evt.message];
@@ -50,37 +53,56 @@ export class ShopChatComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.sub.unsubscribe();
+    if (this.phoneTimer) clearTimeout(this.phoneTimer);
     if (this.conversation) this.chatSvc.leaveConversation(this.conversation._id);
   }
 
   toggleOpen() {
-    this.open = !this.open;
-    if (this.open) this.view = 'menu';
+    if (this.chatOpen) {
+      this.close();
+      return;
+    }
+    this.menuOpen = !this.menuOpen;
+    this.phoneTipVisible = false;
   }
 
   openChat() {
-    this.view = 'chat';
+    this.menuOpen = false;
+    this.chatOpen = true;
+    this.phoneTipVisible = false;
     if (!this.conversation) this.loadOrCreateConversation();
+    else {
+      this.chatSvc.joinConversation(this.conversation._id);
+      this.scrollBottom();
+    }
   }
 
-  openZalo() {
-    if (this.contact?.zalo) window.open(this.contact.zalo, '_blank');
+  onPhone() {
+    this.phoneTipVisible = true;
+    if (this.phoneTimer) clearTimeout(this.phoneTimer);
+    this.phoneTimer = setTimeout(() => { this.phoneTipVisible = false; }, 6000);
+    const href = this.contact?.phoneHref || 'tel:19000000';
+    // Mobile: mở dialer; desktop vẫn hiện tip
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+      window.location.href = href;
+    }
   }
 
-  openFacebook() {
-    if (this.contact?.facebook) window.open(this.contact.facebook, '_blank');
+  backToMenu() {
+    this.chatOpen = false;
+    this.menuOpen = true;
   }
 
-  showPhone() {
-    this.view = 'menu'; // stays open to show phone
+  close() {
+    this.menuOpen = false;
+    this.chatOpen = false;
+    this.phoneTipVisible = false;
   }
-
-  backToMenu() { this.view = 'menu'; }
-
-  close() { this.open = false; }
 
   @HostListener('document:keydown.escape')
-  onEsc() { this.close(); }
+  onEsc() {
+    if (this.menuOpen || this.chatOpen || this.phoneTipVisible) this.close();
+  }
 
   loadOrCreateConversation() {
     this.loading = true;
@@ -112,13 +134,12 @@ export class ShopChatComponent implements OnInit, OnDestroy {
 
     this.chatSvc.sendMessage(this.conversation._id, text).subscribe({
       next: (r) => {
-        // Replace optimistic with real message from server
         this.messages = [...this.messages.slice(0, -1), r.data];
         this.sending = false;
         this.scrollBottom();
       },
       error: () => {
-        this.messages = this.messages.slice(0, -1); // Remove optimistic
+        this.messages = this.messages.slice(0, -1);
         this.error = 'Gửi thất bại, thử lại.';
         this.sending = false;
       }

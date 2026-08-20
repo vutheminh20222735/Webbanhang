@@ -117,9 +117,18 @@ exports.updateProduct = async (req, res, next) => {
       product.images.push(r.secure_url);
     }
     Object.keys(data).forEach(k => {
-      if (k === 'images') return; // handled
+      if (k === 'images' || k === 'imageUrl') return;
       product[k] = data[k];
     });
+    if (data.price !== undefined) product.price = Number(data.price);
+    if (data.stock !== undefined) product.stock = Number(data.stock);
+    if (data.salePrice === '' || data.salePrice === null) product.salePrice = null;
+    else if (data.salePrice !== undefined) product.salePrice = Number(data.salePrice);
+    if (data.imageUrl) {
+      product.images = [data.imageUrl].concat(product.images || []).filter((u, i, arr) => u && arr.indexOf(u) === i);
+    } else if (Array.isArray(data.images) && data.images.length) {
+      product.images = data.images.filter(Boolean);
+    }
     product.updatedAt = Date.now();
     await product.save();
     const AuditLog = require('../models/AuditLog');
