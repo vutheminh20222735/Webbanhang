@@ -28,18 +28,64 @@
     <button class="btn-primary" type="submit">Thêm điện thoại</button>
   </form>
 </div>
+
+<div class="admin-card edit-card" id="edit-phone-card" *ngIf="editing && canUpdate">
+  <div class="edit-head">
+    <h3>Sửa thông tin điện thoại</h3>
+    <button type="button" class="btn-ghost-dark" (click)="cancelEdit()">Đóng</button>
+  </div>
+  <p class="muted">Cập nhật tên, giá, thông số kỹ thuật. Dữ liệu lưu vào hệ thống ngay khi bấm Lưu.</p>
+  <form class="product-form" (submit)="saveEdit($event)">
+    <div class="form-grid">
+      <input [(ngModel)]="editing.name" name="edit_name" placeholder="Tên máy" required />
+      <input [(ngModel)]="editing.brand" name="edit_brand" placeholder="Hãng" required />
+      <input [(ngModel)]="editing.price" name="edit_price" type="number" placeholder="Giá (VNĐ)" required />
+      <input [(ngModel)]="editing.salePrice" name="edit_salePrice" type="number" placeholder="Giá khuyến mãi" />
+      <input [(ngModel)]="editing.stock" name="edit_stock" type="number" placeholder="Tồn kho" />
+      <select [(ngModel)]="editing.category" name="edit_category">
+        <option value="">-- Loại --</option>
+        <option *ngFor="let c of categories" [value]="c._id">{{c.name}}</option>
+      </select>
+      <input [(ngModel)]="editing.ram" name="edit_ram" placeholder="RAM" />
+      <input [(ngModel)]="editing.storage" name="edit_storage" placeholder="Bộ nhớ" />
+      <input [(ngModel)]="editing.color" name="edit_color" placeholder="Màu" />
+      <input [(ngModel)]="editing.screen" name="edit_screen" placeholder="Màn hình" />
+      <input [(ngModel)]="editing.cpu" name="edit_cpu" placeholder="Chip" />
+      <input [(ngModel)]="editing.camera" name="edit_camera" placeholder="Camera" />
+      <input [(ngModel)]="editing.battery" name="edit_battery" placeholder="Pin" />
+      <input [(ngModel)]="editing.operatingSystem" name="edit_os" placeholder="Hệ điều hành" />
+      <select [(ngModel)]="editing.status" name="edit_status">
+        <option value="active">Đang bán</option>
+        <option value="inactive">Ngừng bán</option>
+      </select>
+      <label class="featured-check">
+        <input type="checkbox" [(ngModel)]="editing.featured" name="edit_featured" />
+        Nổi bật
+      </label>
+    </div>
+    <input [(ngModel)]="editing.imageUrl" name="edit_imageUrl" placeholder="Link ảnh (https://...)" />
+    <textarea [(ngModel)]="editing.description" name="edit_description" placeholder="Mô tả sản phẩm" rows="3"></textarea>
+    <p class="error" *ngIf="editError">{{editError}}</p>
+    <p class="ok" *ngIf="editOk">{{editOk}}</p>
+    <div class="edit-actions">
+      <button class="btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}</button>
+      <button class="btn-ghost-dark" type="button" (click)="cancelEdit()">Hủy</button>
+    </div>
+  </form>
+</div>
+
 <div class="admin-card">
   <h3>Sản phẩm</h3>
   <table class="admin-table">
     <tr><th>Tên</th><th>Hãng</th><th>Giá</th><th>Tồn</th><th></th></tr>
-    <tr *ngFor="let p of products">
+    <tr *ngFor="let p of products" [class.is-editing]="editing?._id === p._id">
       <td>{{p.name}}</td>
       <td>{{p.brand}}</td>
-      <td><input class="mini" [(ngModel)]="p.price" /></td>
-      <td><input class="mini" [(ngModel)]="p.stock" /></td>
-      <td>
-        <button class="btn-ghost-dark" (click)="save(p)" *ngIf="canCreate">Lưu</button>
-        <button class="btn-ghost-dark" (click)="del(p)" *ngIf="auth.hasRole('ADMIN')">Xóa</button>
+      <td>{{ p.price | number:'1.0-0' }}₫</td>
+      <td>{{p.stock}}</td>
+      <td class="row-actions">
+        <button class="btn-ghost-dark" type="button" (click)="startEdit(p)" *ngIf="canUpdate">Sửa</button>
+        <button class="btn-ghost-dark" type="button" (click)="del(p)" *ngIf="auth.hasRole('ADMIN')">Xóa</button>
       </td>
     </tr>
   </table>

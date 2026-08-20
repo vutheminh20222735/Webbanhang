@@ -1,8 +1,18 @@
-// ---- Floating button ----
-.sc-fab {
+.sc-dock {
   position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 85;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.sc-dock > * { pointer-events: auto; }
+
+.sc-fab {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -10,51 +20,127 @@
   color: #fff;
   border: 0;
   cursor: pointer;
-  z-index: 999;
-  box-shadow: 0 4px 20px rgba(37,99,235,.4);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
   transition: transform .2s ease, box-shadow .2s ease;
-
-  &:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(37,99,235,.5); }
 }
 
-// ---- Panel ----
-.sc-panel {
-  position: fixed;
-  right: max(12px, env(safe-area-inset-right));
-  bottom: calc(84px + env(safe-area-inset-bottom));
-  width: min(360px, calc(100vw - 24px));
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 12px 48px rgba(15,23,42,.18);
-  z-index: 998;
+.sc-fab:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 28px rgba(37, 99, 235, 0.5);
+}
+
+.sc-speed {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  animation: sc-slide-in .2s ease;
+  align-items: flex-end;
+  gap: 10px;
+  animation: sc-pop .18s ease;
+}
 
-  @keyframes sc-slide-in {
-    from { opacity: 0; transform: translateY(12px) scale(.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes sc-pop {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sc-speed-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+  transition: transform .15s ease;
+
+  span { font-size: 18px; line-height: 1; }
+  em {
+    position: absolute;
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #0f172a;
+    color: #fff;
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+  }
+
+  &:hover {
+    transform: scale(1.08);
+    em { opacity: 1; }
   }
 }
 
-// ---- Shared header ----
-.sc-menu-header,
+.sc-speed-btn--chat { background: #22c55e; order: 1; }
+.sc-speed-btn--phone { background: #0ea5e9; order: 2; }
+.sc-speed-btn--zalo { background: #0068ff; order: 3; font-size: 18px; }
+.sc-speed-btn--fb { background: #1877f2; order: 4; font-family: Arial, sans-serif; }
+
+/* Stack: Chat (top) → Phone → Zalo → FB (near FAB) */
+.sc-speed {
+  flex-direction: column;
+}
+.sc-speed-btn--chat { order: 1; }
+.sc-speed-btn--phone { order: 2; }
+.sc-speed-btn--zalo { order: 3; }
+.sc-speed-btn--fb { order: 4; }
+
+.sc-phone-tip {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #334155;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+  max-width: 220px;
+
+  a {
+    display: inline-block;
+    margin-left: 8px;
+    color: #2563eb;
+    font-weight: 700;
+  }
+}
+
+.sc-panel {
+  width: min(360px, calc(100vw - 28px));
+  max-height: min(520px, calc(100dvh - 100px));
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: sc-pop .18s ease;
+}
+
 .sc-chat-header {
   background: #0f172a;
   color: #fff;
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 52px;
+  min-height: 48px;
+  flex-shrink: 0;
 }
-
-.sc-menu-title { font-weight: 700; font-size: 15px; flex: 1; }
 
 .sc-close,
 .sc-back {
@@ -63,25 +149,22 @@
   color: #94a3b8;
   cursor: pointer;
   font-size: 20px;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 8px;
   flex-shrink: 0;
 
   &:hover { color: #fff; background: rgba(255,255,255,.1); }
 }
-
-.sc-back { font-size: 22px; }
 
 .sc-chat-title {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
-
   strong { font-size: 14px; }
 }
 
@@ -90,76 +173,9 @@
   height: 9px;
   border-radius: 50%;
   background: #22c55e;
-  box-shadow: 0 0 0 2px rgba(34,197,94,.25);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
 }
 
-// ---- Menu body ----
-.sc-menu-body {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sc-action {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color .15s, background .15s;
-
-  &:hover { border-color: #2563eb; background: #eff6ff; }
-
-  &--primary {
-    background: #eff6ff;
-    border-color: #93c5fd;
-
-    strong { color: #1d4ed8; }
-  }
-}
-
-.sc-action-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.sc-icon-img { width: 22px; height: 22px; object-fit: contain; }
-
-.sc-action-label {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-
-  strong { font-size: 14px; font-weight: 600; }
-  small { font-size: 12px; color: #64748b; }
-}
-
-.sc-action-arrow { color: #94a3b8; font-size: 20px; }
-
-.sc-menu-footer {
-  padding: 8px 14px 12px;
-  font-size: 12px;
-  color: #94a3b8;
-  text-align: center;
-  border-top: 1px solid #f1f5f9;
-}
-
-// ---- Chat messages ----
 .sc-messages {
   flex: 1;
   overflow-y: auto;
@@ -167,8 +183,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 280px;
+  min-height: 220px;
   max-height: 320px;
+  background: #f8fafc;
 }
 
 .sc-loading, .sc-welcome {
@@ -186,9 +203,7 @@
   max-width: 82%;
 
   &--customer { align-self: flex-end; }
-  &--staff    { align-self: flex-start; }
-
-  &--sending .sc-msg-bubble { opacity: .6; }
+  &--staff { align-self: flex-start; }
 }
 
 .sc-msg-bubble {
@@ -206,7 +221,7 @@
   }
 
   .sc-msg--staff & {
-    background: #f1f5f9;
+    background: #eef2ff;
     color: #1e293b;
     border-bottom-left-radius: 4px;
   }
@@ -221,11 +236,11 @@
   .sc-msg--customer & { text-align: right; }
 }
 
-// ---- Input area ----
 .sc-error {
   padding: 4px 12px;
   font-size: 12px;
   color: #dc2626;
+  flex-shrink: 0;
 }
 
 .sc-input-row {
@@ -233,29 +248,29 @@
   border-top: 1px solid #e2e8f0;
   padding: 8px;
   gap: 6px;
-  align-items: flex-end;
+  align-items: center;
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .sc-input {
   flex: 1;
   border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 9px 12px;
+  border-radius: 999px;
+  padding: 10px 14px;
   font-size: 14px;
   font-family: inherit;
-  resize: none;
-  min-height: 40px;
-  max-height: 90px;
-  transition: border-color .15s;
+  min-width: 0;
+  min-height: 42px;
 
   &:focus { outline: none; border-color: #2563eb; }
   &:disabled { background: #f8fafc; }
 }
 
 .sc-send {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: #2563eb;
   color: #fff;
   border: 0;
@@ -265,24 +280,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background .15s;
 
   &:hover:not(:disabled) { background: #1d4ed8; }
   &:disabled { background: #94a3b8; cursor: default; }
 }
 
-// ---- Responsive ----
-@media (max-width: 480px) {
+@media (max-width: 560px) {
+  .sc-dock {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
   .sc-panel {
-    right: 0;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    border-radius: 18px 18px 0 0;
-    max-height: 90dvh;
+    width: min(360px, calc(100vw - 20px));
+    max-height: min(70dvh, calc(100dvh - 90px));
   }
 
   .sc-messages {
-    max-height: 45dvh;
+    min-height: 180px;
+    max-height: none;
+    flex: 1;
+  }
+
+  .sc-speed-btn em { display: none; }
+
+  .sc-fab {
+    width: 52px;
+    height: 52px;
   }
 }

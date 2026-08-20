@@ -23,6 +23,7 @@ export class ProductsListComponent implements OnInit {
   brands: string[] = [];
   selectedCategory = '';
   selectedBrand = '';
+  searchQuery = '';
   priceRange = { min: 0, max: 100000000 };
   sortBy = 'newest';
   filterOpen = false;
@@ -34,13 +35,15 @@ export class ProductsListComponent implements OnInit {
     this.loadCategories();
     this.loadProducts();
     this.route.queryParams.subscribe((params) => {
-      if (params['category']) this.selectedCategory = params['category'];
+      this.selectedCategory = params['category'] || '';
+      this.selectedBrand = params['brand'] || '';
+      this.searchQuery = params['q'] || '';
       this.applyFilters();
     });
   }
 
   get hasActiveFilters(): boolean {
-    return !!(this.selectedCategory || this.selectedBrand || this.sortBy !== 'newest' || this.priceRange.min > 0 || this.priceRange.max < 100000000);
+    return !!(this.selectedCategory || this.selectedBrand || this.searchQuery || this.sortBy !== 'newest' || this.priceRange.min > 0 || this.priceRange.max < 100000000);
   }
 
   loadCategories() {
@@ -99,6 +102,13 @@ export class ProductsListComponent implements OnInit {
     if (this.selectedBrand) {
       filtered = filtered.filter((p) => p.brand === this.selectedBrand);
     }
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      filtered = filtered.filter((p) =>
+        String(p.name || '').toLowerCase().includes(q) ||
+        String(p.brand || '').toLowerCase().includes(q)
+      );
+    }
 
     const max = this.priceRange.max || 100000000;
     filtered = filtered.filter((p) => {
@@ -132,6 +142,7 @@ export class ProductsListComponent implements OnInit {
   clearFilters() {
     this.selectedCategory = '';
     this.selectedBrand = '';
+    this.searchQuery = '';
     this.priceRange = { min: 0, max: 100000000 };
     this.sortBy = 'newest';
     this.applyFilters();

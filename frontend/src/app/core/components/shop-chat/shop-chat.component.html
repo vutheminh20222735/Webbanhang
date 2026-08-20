@@ -1,69 +1,31 @@
-<!-- Floating button -->
-<button class="sc-fab" type="button" (click)="toggleOpen()" [attr.aria-expanded]="open" aria-label="Chat với cửa hàng">
-  <span class="sc-fab-icon">💬</span>
-</button>
+<!-- Dock: mặc định chỉ FAB; bấm mở 4 icon phía trên -->
+<div class="sc-dock" [class.sc-dock--open]="menuOpen" [class.sc-dock--chat]="chatOpen">
+  <div class="sc-speed" *ngIf="menuOpen && !chatOpen">
+    <button type="button" class="sc-speed-btn sc-speed-btn--chat" (click)="openChat()" title="Chat trực tiếp với cửa hàng" aria-label="Chat trực tiếp với cửa hàng">
+      <span>💬</span>
+      <em>Chat</em>
+    </button>
+    <button type="button" class="sc-speed-btn sc-speed-btn--phone" (click)="onPhone()" title="Số điện thoại" aria-label="Số điện thoại">
+      <span>📞</span>
+      <em>Gọi</em>
+    </button>
+    <a class="sc-speed-btn sc-speed-btn--zalo" [href]="contact?.zalo || 'https://zalo.me/'" target="_blank" rel="noopener" title="Zalo" aria-label="Zalo">
+      <span>Z</span>
+      <em>Zalo</em>
+    </a>
+    <a class="sc-speed-btn sc-speed-btn--fb" [href]="contact?.facebook || 'https://facebook.com/'" target="_blank" rel="noopener" title="Facebook" aria-label="Facebook">
+      <span>f</span>
+      <em>Facebook</em>
+    </a>
+  </div>
 
-<!-- Floating panel -->
-<div class="sc-panel" *ngIf="open" role="dialog" aria-label="Liên hệ cửa hàng">
+  <div class="sc-phone-tip" *ngIf="phoneTipVisible">
+    Hotline: <strong>{{ contact?.phone || '1900 0000' }}</strong>
+    <a [href]="contact?.phoneHref || 'tel:19000000'">Gọi ngay</a>
+  </div>
 
-  <!-- ===== MENU VIEW ===== -->
-  <ng-container *ngIf="view === 'menu'">
-    <div class="sc-menu-header">
-      <span class="sc-menu-title">Liên hệ với chúng tôi</span>
-      <button class="sc-close" type="button" (click)="close()" aria-label="Đóng">✕</button>
-    </div>
-
-    <div class="sc-menu-body">
-      <button class="sc-action sc-action--primary" type="button" (click)="openChat()">
-        <span class="sc-action-icon">🟢</span>
-        <span class="sc-action-label">
-          <strong>Chat trực tiếp</strong>
-          <small>Nhân viên sẽ phản hồi ngay</small>
-        </span>
-        <span class="sc-action-arrow">›</span>
-      </button>
-
-      <a class="sc-action" [href]="contact?.zalo || 'https://zalo.me/'" target="_blank" rel="noopener">
-        <span class="sc-action-icon">
-          <img src="assets/icons/zalo.png" alt="Zalo" class="sc-icon-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-          <span style="display:none">💬</span>
-        </span>
-        <span class="sc-action-label">
-          <strong>Zalo</strong>
-          <small>Nhắn qua Zalo</small>
-        </span>
-        <span class="sc-action-arrow">›</span>
-      </a>
-
-      <a class="sc-action" [href]="contact?.facebook || 'https://facebook.com/'" target="_blank" rel="noopener">
-        <span class="sc-action-icon">
-          <img src="assets/icons/facebook.png" alt="Facebook" class="sc-icon-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-          <span style="display:none">📘</span>
-        </span>
-        <span class="sc-action-label">
-          <strong>Facebook</strong>
-          <small>Nhắn qua Messenger</small>
-        </span>
-        <span class="sc-action-arrow">›</span>
-      </a>
-
-      <a class="sc-action" [href]="contact?.phoneHref || 'tel:19000000'">
-        <span class="sc-action-icon">📞</span>
-        <span class="sc-action-label">
-          <strong>Gọi điện</strong>
-          <small>{{ contact?.phone || '1900 0000' }}</small>
-        </span>
-        <span class="sc-action-arrow">›</span>
-      </a>
-    </div>
-
-    <div class="sc-menu-footer">
-      Phản hồi trong vòng 5–15 phút
-    </div>
-  </ng-container>
-
-  <!-- ===== CHAT VIEW ===== -->
-  <ng-container *ngIf="view === 'chat'">
+  <!-- Cửa sổ chat chỉ hiện khi chọn Chat trực tiếp -->
+  <div class="sc-panel" *ngIf="chatOpen" role="dialog" aria-label="Chat với cửa hàng">
     <div class="sc-chat-header">
       <button class="sc-back" type="button" (click)="backToMenu()" aria-label="Quay lại">‹</button>
       <div class="sc-chat-title">
@@ -90,29 +52,35 @@
           <ng-container *ngIf="m.createdAt"> · {{ m.createdAt | date:'HH:mm' }}</ng-container>
         </div>
       </div>
-
-      <div *ngIf="sending" class="sc-msg sc-msg--customer sc-msg--sending">
-        <div class="sc-msg-bubble">...</div>
-      </div>
     </div>
 
     <div *ngIf="error" class="sc-error">{{ error }}</div>
 
     <form class="sc-input-row" (submit)="$event.preventDefault(); send()">
-      <textarea
+      <input
         class="sc-input"
         [(ngModel)]="inputText"
         name="msg"
         placeholder="Nhập tin nhắn..."
-        rows="1"
         (keydown)="onKeydown($event)"
         [disabled]="sending || loading"
         maxlength="1000"
-      ></textarea>
-      <button class="sc-send" type="submit" [disabled]="!inputText.trim() || sending || loading">
+        autocomplete="off"
+      />
+      <button class="sc-send" type="submit" [disabled]="!inputText.trim() || sending || loading" aria-label="Gửi">
         ➤
       </button>
     </form>
-  </ng-container>
+  </div>
 
+  <button
+    class="sc-fab"
+    type="button"
+    (click)="toggleOpen()"
+    [attr.aria-expanded]="menuOpen || chatOpen"
+    aria-label="Liên hệ cửa hàng"
+  >
+    <span *ngIf="!menuOpen && !chatOpen">💬</span>
+    <span *ngIf="menuOpen || chatOpen">✕</span>
+  </button>
 </div>

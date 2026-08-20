@@ -9,34 +9,66 @@ import { WishlistService } from '../../core/services/wishlist.service';
   template: `
     <div class="nav-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
     <header class="shop-header" [class.menu-open]="menuOpen">
-      <div class="shop-header-inner">
-        <a routerLink="/" class="logo" (click)="closeMenu()">Phone<span>Shop</span></a>
-        <nav class="shop-nav" [class.open]="menuOpen" (click)="$event.stopPropagation()">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Điện thoại</a>
-          <a routerLink="/wishlist" routerLinkActive="active" (click)="closeMenu()">Yêu thích</a>
-          <a routerLink="/cart" routerLinkActive="active" class="nav-cart" (click)="closeMenu()">
-            Giỏ hàng
-            <span class="cart-badge" *ngIf="(cart.count$ | async) as n">{{ n }}</span>
-          </a>
-          <a routerLink="/orders" routerLinkActive="active" (click)="closeMenu()">Đơn hàng</a>
-          <a *ngIf="loggedIn" routerLink="/account/profile" routerLinkActive="active" [class.active]="isAccount" (click)="closeMenu()">Tài khoản</a>
-          <a *ngIf="isStaff" routerLink="/admin" (click)="closeMenu()">Quản trị</a>
-          <a *ngIf="!loggedIn" routerLink="/login" routerLinkActive="active" class="nav-auth mobile-only" (click)="closeMenu()">Đăng nhập</a>
-          <a *ngIf="!loggedIn" routerLink="/register" routerLinkActive="active" class="nav-auth mobile-only" (click)="closeMenu()">Đăng ký</a>
-          <button *ngIf="loggedIn" type="button" class="btn-ghost mobile-only" (click)="logout()">Đăng xuất</button>
-        </nav>
-        <div class="shop-actions desktop-only">
-          <a *ngIf="!loggedIn" routerLink="/login" class="btn-primary header-cta">Đăng nhập</a>
-          <a *ngIf="!loggedIn" routerLink="/register" class="btn-primary header-cta">Đăng ký</a>
-          <button *ngIf="loggedIn" type="button" class="btn-primary header-cta" (click)="logout()">Đăng xuất</button>
+      <div class="shop-header-top">
+        <div class="shop-header-inner">
+          <a routerLink="/" class="logo" (click)="closeMenu()">Phone<span>Shop</span></a>
+          <form class="header-search" (submit)="search($event)">
+            <input name="q" [(ngModel)]="searchText" placeholder="Bạn tìm gì..." autocomplete="off" />
+            <button type="submit" aria-label="Tìm kiếm">⌕</button>
+          </form>
+          <div class="shop-actions desktop-only">
+            <a *ngIf="!loggedIn" routerLink="/login" class="header-link">Đăng nhập</a>
+            <a *ngIf="loggedIn" routerLink="/account/profile" class="header-link">Tài khoản</a>
+            <a routerLink="/cart" class="header-link nav-cart">
+              Giỏ hàng
+              <span class="cart-badge" *ngIf="(cart.count$ | async) as n">{{ n }}</span>
+            </a>
+            <button *ngIf="loggedIn" type="button" class="header-link header-link-btn" (click)="logout()">Đăng xuất</button>
+          </div>
+          <button class="menu-toggle" type="button" (click)="toggleMenu(); $event.stopPropagation()" [attr.aria-expanded]="menuOpen" [attr.aria-label]="menuOpen ? 'Đóng menu' : 'Mở menu'">☰</button>
         </div>
-        <button class="menu-toggle" type="button" (click)="toggleMenu(); $event.stopPropagation()" [attr.aria-expanded]="menuOpen" [attr.aria-label]="menuOpen ? 'Đóng menu' : 'Mở menu'">☰</button>
+      </div>
+      <div class="shop-header-cats">
+        <div class="shop-header-inner">
+          <nav class="shop-nav" [class.open]="menuOpen" (click)="$event.stopPropagation()">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Điện thoại</a>
+            <a routerLink="/" [queryParams]="{brand: 'Apple'}" (click)="closeMenu()">Apple</a>
+            <a routerLink="/" [queryParams]="{brand: 'Samsung'}" (click)="closeMenu()">Samsung</a>
+            <a routerLink="/wishlist" routerLinkActive="active" (click)="closeMenu()">Yêu thích</a>
+            <a routerLink="/cart" routerLinkActive="active" class="nav-cart mobile-only" (click)="closeMenu()">
+              Giỏ hàng
+              <span class="cart-badge" *ngIf="(cart.count$ | async) as n">{{ n }}</span>
+            </a>
+            <a routerLink="/orders" routerLinkActive="active" (click)="closeMenu()">Đơn hàng</a>
+            <a *ngIf="loggedIn" routerLink="/account/profile" routerLinkActive="active" [class.active]="isAccount" (click)="closeMenu()">Tài khoản</a>
+            <a *ngIf="isStaff" routerLink="/admin" (click)="closeMenu()">Quản trị</a>
+            <a *ngIf="!loggedIn" routerLink="/login" routerLinkActive="active" class="nav-auth mobile-only" (click)="closeMenu()">Đăng nhập</a>
+            <a *ngIf="!loggedIn" routerLink="/register" routerLinkActive="active" class="nav-auth mobile-only" (click)="closeMenu()">Đăng ký</a>
+            <button *ngIf="loggedIn" type="button" class="btn-ghost mobile-only" (click)="logout()">Đăng xuất</button>
+          </nav>
+        </div>
       </div>
     </header>
     <div class="shop-header-spacer" aria-hidden="true"></div>
-    <main class="shop-main" (click)="closeMenu()">
-      <router-outlet></router-outlet>
-    </main>
+    <div class="store-wrap">
+      <aside class="side-ad side-ad--left" aria-hidden="true">
+        <div class="side-ad-card">
+          <strong>LAPTOP TỰU TRƯỜNG</strong>
+          <span>Tặng Microsoft Office</span>
+          <em>Tân sinh viên giảm thêm</em>
+        </div>
+      </aside>
+      <main class="shop-main" (click)="closeMenu()">
+        <router-outlet></router-outlet>
+      </main>
+      <aside class="side-ad side-ad--right" aria-hidden="true">
+        <div class="side-ad-card">
+          <strong>LAPTOP TỰU TRƯỜNG</strong>
+          <span>Tặng Microsoft Office</span>
+          <em>Tân sinh viên giảm thêm</em>
+        </div>
+      </aside>
+    </div>
     <footer class="shop-footer">
       <p>PhoneShop — Cửa hàng điện thoại chính hãng</p>
       <p>Hotline: 1900 0000 · Hà Nội</p>
@@ -46,6 +78,7 @@ import { WishlistService } from '../../core/services/wishlist.service';
 })
 export class CustomerLayoutComponent implements OnInit {
   menuOpen = false;
+  searchText = '';
   constructor(public auth: AuthService, public cart: CartService, private wishlist: WishlistService, private router: Router) {}
   ngOnInit() {
     this.cart.refresh();
@@ -56,6 +89,12 @@ export class CustomerLayoutComponent implements OnInit {
   get isAccount() { return this.router.url.startsWith('/account'); }
   closeMenu() { this.menuOpen = false; }
   toggleMenu() { this.menuOpen = !this.menuOpen; }
+  search(e: Event) {
+    e.preventDefault();
+    const q = (this.searchText || '').trim();
+    this.closeMenu();
+    this.router.navigate(['/'], { queryParams: q ? { q } : {} });
+  }
 
   @HostListener('window:scroll')
   onWindowScroll() {

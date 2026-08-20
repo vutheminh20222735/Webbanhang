@@ -79,6 +79,49 @@ textarea {
   color: #15803d;
 }
 
+.edit-card {
+  border: 2px solid #93c5fd;
+}
+
+.edit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.edit-head h3 { margin: 0; }
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.featured-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.featured-check input {
+  width: auto;
+  margin: 0;
+}
+
+.row-actions {
+  white-space: nowrap;
+}
+
+.is-editing td {
+  background: #eff6ff;
+}
+
 @media (max-width: 700px) {
   .form-grid {
     grid-template-columns: 1fr;
