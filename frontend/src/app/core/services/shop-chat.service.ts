@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -45,8 +46,9 @@ export class ShopChatService {
   /** Thông báo conversation mới/updated cho staff */
   conversationUpdated$ = new Subject<any>();
 
-  private socket: any = null;
+  private socket: Socket | null = null;
   private guestId: string = '';
+  private socketListenersReady = false;
 
   constructor(private http: HttpClient, private auth: AuthService) {
     this.guestId = this.getOrCreateGuestId();
@@ -118,34 +120,41 @@ export class ShopChatService {
   }
 
   // ---- Socket.IO ----
+  private getSocketBaseUrl(): string {
+    const wsUrl = (environment as { wsUrl?: string }).wsUrl;
+    if (wsUrl) return wsUrl;
+    // apiUrl dạng https://host/api → socket cần https://host
+    return environment.apiUrl.replace(/\/api\/?$/, '') || window.location.origin;
+  }
+
   initSocket() {
     if (this.socket) return;
-    try {
-      const { io } = require('socket.io-client');
-      const baseUrl = (environment as any).wsUrl || window.location.origin;
-      this.socket = io(baseUrl, { path: '/socket.io', transports: ['websocket', 'polling'] });
-    } catch (_) {
-      console.warn('socket.io-client not available');
+    this.socket = io(this.getSocketBaseUrl(), {
+      path: '/socket.io',
+      transports: ['websocket', 'polling']
+    });
+
+    if (!this.socketListenersReady) {
+      this.socket.on('new_message', (data: { conversationId: string; message: ChatMessage }) => {
+        this.newMessage$.next(data);
+      });
+      this.socket.on('conversation_updated', (data: any) => {
+        this.conversationUpdated$.next(data);
+        this.staffUnread$.next((this.staffUnread$.value || 0) + 1);
+      });
+      this.socketListenersReady = true;
     }
   }
 
   joinConversation(conversationId: string) {
     if (!this.socket) this.initSocket();
     this.socket?.emit('join_conversation', conversationId);
-    this.socket?.on('new_message', (data: any) => {
-      this.newMessage$.next(data);
-    });
   }
 
   joinStaffRoom() {
     if (!this.socket) this.initSocket();
     const token = this.auth.getToken();
     this.socket?.emit('join_staff', token);
-    this.socket?.on('conversation_updated', (data: any) => {
-      this.conversationUpdated$.next(data);
-      // Tăng badge
-      this.staffUnread$.next((this.staffUnread$.value || 0) + 1);
-    });
   }
 
   leaveConversation(conversationId: string) {
@@ -155,5 +164,6 @@ export class ShopChatService {
   disconnectSocket() {
     this.socket?.disconnect();
     this.socket = null;
+    this.socketListenersReady = false;
   }
 }
