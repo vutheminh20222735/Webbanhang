@@ -8,6 +8,7 @@ import { CustomerLayoutComponent } from './layouts/customer-layout/customer-layo
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { ForbiddenComponent } from './core/components/forbidden.component';
 import { ChatbotComponent } from './core/components/chatbot/chatbot.component';
+import { ShopChatComponent } from './core/components/shop-chat/shop-chat.component';
 import { RouterModule, Routes } from '@angular/router';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { AuthGuard } from './core/guards/auth.guard';
@@ -41,7 +42,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent],
+  declarations: [AppComponent, CustomerLayoutComponent, AdminLayoutComponent, ForbiddenComponent, ChatbotComponent, ShopChatComponent],
   imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule, FormsModule, CommonModule, RouterModule.forRoot(routes)],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }],
   bootstrap: [AppComponent]

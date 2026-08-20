@@ -1,0 +1,101 @@
+<div class="ac-shell">
+
+  <!-- ===== LEFT: danh sách conversation ===== -->
+  <aside class="ac-sidebar">
+    <div class="ac-sidebar-header">
+      <h2>Tin nhắn</h2>
+      <div class="ac-filter">
+        <button [class.active]="statusFilter==='open'"   (click)="changeFilter('open')">Đang mở</button>
+        <button [class.active]="statusFilter==='closed'" (click)="changeFilter('closed')">Đã đóng</button>
+        <button [class.active]="statusFilter==='all'"    (click)="changeFilter('all')">Tất cả</button>
+      </div>
+    </div>
+
+    <div class="ac-conv-list">
+      <div *ngIf="loadingConvs" class="ac-empty">Đang tải...</div>
+      <div *ngIf="!loadingConvs && conversations.length === 0" class="ac-empty">Chưa có tin nhắn nào</div>
+
+      <div *ngFor="let conv of conversations"
+           class="ac-conv-item"
+           [class.active]="activeConv?._id === conv._id"
+           [class.unread]="(conv.unreadStaff || 0) > 0"
+           (click)="selectConversation(conv)">
+        <div class="ac-avatar">{{ getInitial(conv) }}</div>
+        <div class="ac-conv-info">
+          <div class="ac-conv-name">{{ getDisplayName(conv) }}</div>
+          <div class="ac-conv-last">{{ conv.lastMessage || 'Bắt đầu hội thoại' }}</div>
+        </div>
+        <div class="ac-conv-meta">
+          <span class="ac-unread-badge" *ngIf="(conv.unreadStaff || 0) > 0">{{ conv.unreadStaff }}</span>
+          <span class="ac-status" [class.closed]="conv.status === 'closed'">{{ conv.status === 'open' ? '🟢' : '⚪' }}</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== RIGHT: cửa sổ chat ===== -->
+  <main class="ac-main">
+    <ng-container *ngIf="activeConv; else noConv">
+      <div class="ac-chat-header">
+        <div class="ac-chat-info">
+          <div class="ac-avatar sm">{{ getInitial(activeConv) }}</div>
+          <div>
+            <div class="ac-conv-name">{{ getDisplayName(activeConv) }}</div>
+            <div class="ac-conv-sub">
+              {{ activeConv.user ? 'Thành viên' : 'Khách vãng lai' }} &middot;
+              Trạng thái: <strong>{{ activeConv.status === 'open' ? 'Đang mở' : 'Đã đóng' }}</strong>
+            </div>
+          </div>
+        </div>
+        <button *ngIf="activeConv.status === 'open'" class="btn-ghost-dark" (click)="closeConversation()">
+          Đóng hội thoại
+        </button>
+      </div>
+
+      <div class="ac-messages" #msgWrap>
+        <div *ngIf="loadingMsgs" class="ac-loading">Đang tải tin nhắn...</div>
+        <div *ngIf="!loadingMsgs && messages.length === 0" class="ac-empty-chat">
+          Chưa có tin nhắn nào.
+        </div>
+
+        <div *ngFor="let m of messages"
+             class="ac-msg"
+             [class.ac-msg--customer]="m.sender === 'customer'"
+             [class.ac-msg--staff]="m.sender === 'staff'">
+          <div class="ac-msg-label">{{ m.sender === 'staff' ? 'Nhân viên' : getDisplayName(activeConv) }}</div>
+          <div class="ac-msg-bubble">{{ m.text }}</div>
+          <div class="ac-msg-time" *ngIf="m.createdAt">{{ m.createdAt | date:'dd/MM HH:mm' }}</div>
+        </div>
+
+        <div *ngIf="sending" class="ac-msg ac-msg--staff ac-msg--sending">
+          <div class="ac-msg-bubble">...</div>
+        </div>
+      </div>
+
+      <form class="ac-reply-row" (submit)="$event.preventDefault(); reply()" *ngIf="activeConv.status === 'open'">
+        <textarea
+          class="ac-reply-input"
+          [(ngModel)]="replyText"
+          name="reply"
+          placeholder="Trả lời khách hàng..."
+          rows="2"
+          (keydown)="onReplyKeydown($event)"
+          [disabled]="sending"
+          maxlength="2000"
+        ></textarea>
+        <button class="btn-primary" type="submit" [disabled]="!replyText.trim() || sending">Gửi</button>
+      </form>
+      <div class="ac-closed-notice" *ngIf="activeConv.status === 'closed'">
+        Hội thoại đã đóng
+      </div>
+    </ng-container>
+
+    <ng-template #noConv>
+      <div class="ac-placeholder">
+        <p>💬</p>
+        <p>Chọn một hội thoại để bắt đầu trả lời</p>
+      </div>
+    </ng-template>
+  </main>
+
+</div>

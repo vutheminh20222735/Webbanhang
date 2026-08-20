@@ -319,41 +319,9 @@ a.btn:hover,
 .mini { width: 110px !important; }
 .btn-ghost-dark { background: #eef2ff; border: 0; border-radius: 8px; padding: 8px 10px; margin: 4px 4px 4px 0; cursor: pointer; min-height: 40px; }
 .ok { color: #15803d; }
-.chatbot-floating {
-  position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
-  background: #2563eb;
-  color: #fff;
-  border: 0;
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  font-size: 22px;
-  cursor: pointer;
-  z-index: 50;
-}
-.chatbot-panel {
-  position: fixed;
-  right: max(12px, env(safe-area-inset-right));
-  bottom: calc(80px + env(safe-area-inset-bottom));
-  width: min(360px, calc(100vw - 24px));
-  height: min(460px, 70vh);
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 12px 40px rgba(15,23,42,.2);
-  display: flex;
-  flex-direction: column;
-  z-index: 50;
-  overflow: hidden;
-}
-.chat-header { padding: 10px 14px; background: #0f172a; color: #fff; display: flex; justify-content: space-between; }
-.chat-header button { background: none; border: 0; color: #fff; cursor: pointer; min-width: 36px; min-height: 36px; }
-.messages { padding: 12px; flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 8px; }
-.messages .user { align-self: flex-end; background: #2563eb; color: #fff; border-radius: 12px 12px 2px 12px; padding: 8px 10px; max-width: 85%; }
-.messages .bot { align-self: flex-start; background: #eef2ff; border-radius: 12px 12px 12px 2px; padding: 8px 10px; max-width: 85%; }
-.chatbot-panel form, .ai-form { display: flex; border-top: 1px solid #e5e7eb; }
-.chatbot-panel input, .ai-form input { flex: 1; border: 0; padding: 12px; min-width: 0; }
+/* chatbot-* styles removed — replaced by ShopChatComponent (.sc-*) */
+.ai-form { display: flex; border-top: 1px solid #e5e7eb; }
+.ai-form input { flex: 1; border: 0; padding: 12px; min-width: 0; }
 .admin-messages { min-height: 220px; background: #f8fafc; border-radius: 10px; }
 .ai-form { margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
 .ai-form .btn-primary { margin: 6px; }

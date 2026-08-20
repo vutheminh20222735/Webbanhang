@@ -9,6 +9,7 @@ import { AdminProductsComponent } from './admin-products.component';
 import { AdminOrdersComponent } from './admin-orders.component';
 import { AdminUsersComponent } from './admin-users.component';
 import { AdminCouponsComponent } from './admin-coupons.component';
+import { AdminChatComponent } from './admin-chat.component';
 
 import { RoleGuard } from '../../core/guards/role.guard';
 
@@ -19,7 +20,8 @@ import { RoleGuard } from '../../core/guards/role.guard';
     AdminProductsComponent,
     AdminOrdersComponent,
     AdminUsersComponent,
-    AdminCouponsComponent
+    AdminCouponsComponent,
+    AdminChatComponent
   ],
 
   imports: [
@@ -79,6 +81,12 @@ import { RoleGuard } from '../../core/guards/role.guard';
         data: {
           roles: ['ADMIN']
         }
+      },
+      {
+        path: 'chat',
+        component: AdminChatComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] }
       }
     ])
   ]
