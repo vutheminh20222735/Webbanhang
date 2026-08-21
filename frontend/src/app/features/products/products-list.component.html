@@ -2,66 +2,74 @@
   <div class="home-hero-main">
     <div class="home-hero-copy">
       <p class="home-hero-tag">Ưu đãi online</p>
-      <h1>Điện thoại chính hãng · Giá tốt mỗi ngày</h1>
-      <p>Đổi cũ lấy mới cực hời · Bảo hành 12 tháng · Giao hàng toàn quốc</p>
-      <div class="home-hero-pills">
-        <span>Giảm đến 3 triệu</span>
-        <span>Trả góp 0%</span>
-        <span>Online only</span>
-        <span>Giao nhanh 2H</span>
+      <h1>Smartphone Collection 2026</h1>
+      <p>Điện thoại chính hãng · Giá tốt mỗi ngày · Bảo hành 12 tháng · Giao hàng toàn quốc</p>
+      <div class="home-hero-actions">
+        <a class="btn-primary hero-btn" href="#featured-products">Khám phá ngay</a>
+        <button type="button" class="btn-hero-outline" (click)="clearFilters()">Xem tất cả</button>
       </div>
     </div>
-    <div class="home-hero-visual" aria-hidden="true">
-      <div class="home-hero-phone"></div>
+  </div>
+</section>
+
+<section class="category-cards">
+  <article class="cat-card">
+    <div class="cat-card-visual">
+      <img
+        src="https://cdn.tgdd.vn/Products/Images/42/368250/oppo-reno16-f-trang-thumb-600x600.jpg"
+        alt="Smartphone"
+        loading="lazy"
+      />
     </div>
-  </div>
-</section>
-
-<section class="promo-strip">
-  <div class="promo-strip-item">
-    <strong>PayLater</strong>
-    <span>Hạn mức đến 40 triệu</span>
-  </div>
-  <div class="promo-strip-item">
-    <strong>Thẻ tín dụng</strong>
-    <span>Ưu đãi trả góp 0%</span>
-  </div>
-</section>
-
-<section class="promo-online">
-  <h2>Khuyến mãi online</h2>
-  <div class="promo-tabs">
-    <button type="button" class="promo-tab hot" (click)="selectedBrand=''; applyFilters()">Flash Sale</button>
-    <button type="button" class="promo-tab hot" (click)="selectedBrand=''; applyFilters()">Online Only</button>
-    <button type="button" class="promo-tab" (click)="selectedBrand=''; applyFilters()">Điện thoại</button>
-    <button type="button" class="promo-tab" *ngFor="let brand of brands.slice(0,4)" (click)="selectedBrand=brand; applyFilters()">{{ brand }}</button>
-  </div>
-</section>
-
-<section class="promo-booths">
-  <h2>Gian hàng ưu đãi</h2>
-  <div class="promo-booth-grid">
-    <article class="promo-booth booth-a">
-      <h3>Samsung Galaxy</h3>
-      <p>Ưu đãi đến 5 triệu</p>
-      <a routerLink="/" [queryParams]="{brand:'Samsung'}" class="booth-cta">Mua ngay</a>
-    </article>
-    <article class="promo-booth booth-b">
-      <h3>Chơi game mượt</h3>
-      <p>Máy mạnh trong tầm giá</p>
-      <a routerLink="/" class="booth-cta">Mua ngay</a>
-    </article>
-    <article class="promo-booth booth-c">
-      <h3>Lương về sale to</h3>
-      <p>Giảm đến 50%</p>
-      <a routerLink="/" class="booth-cta">Mua ngay</a>
-    </article>
-    <article class="promo-booth booth-d">
-      <h3>Phụ kiện online</h3>
-      <p>Giảm đến 50%++</p>
-      <a routerLink="/" class="booth-cta">Mua ngay</a>
-    </article>
-  </div>
+    <div class="cat-card-body">
+      <h3>Smartphone</h3>
+      <p>Điện thoại chính hãng mới nhất</p>
+      <button type="button" class="cat-link" (click)="filterBySlug('smartphone')">Xem ngay →</button>
+    </div>
+  </article>
+  <article class="cat-card">
+    <div class="cat-card-visual">
+      <img
+        src="https://chatgpt.com/backend-api/estuary/content?id=file_000000002aac8211a75f5bad75aa75f6&ts=496466&p=fs&cid=1&sig=46ca5bea9019c56262c634bb3d49488312b5cd57428779408047be94b3b295aa&v=0"
+        alt="Gaming"
+        loading="lazy"
+        (error)="$any($event.target).src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpMFKFAiYLm6kKZQdPi08CCBSHWBYaXsP57QsZXzJ25A&s=10'"
+      />
+    </div>
+    <div class="cat-card-body">
+      <h3>Gaming</h3>
+      <p>Máy mạnh, chơi game mượt</p>
+      <button type="button" class="cat-link" (click)="filterBySlug('gaming')">Xem ngay →</button>
+    </div>
+  </article>
+  <article class="cat-card">
+    <div class="cat-card-visual">
+      <img
+        src="https://cdnv2.tgdd.vn/mwg-static/common/News/1583045/so-sanh-camera-cac-dong-iphone-19.jpg"
+        alt="Camera Phone"
+        loading="lazy"
+      />
+    </div>
+    <div class="cat-card-body">
+      <h3>Camera Phone</h3>
+      <p>Chụp ảnh chuyên nghiệp</p>
+      <button type="button" class="cat-link" (click)="filterBySlug('camera-phone')">Xem ngay →</button>
+    </div>
+  </article>
+  <article class="cat-card">
+    <div class="cat-card-visual">
+      <img
+        src="https://www.phukiensamsung.com/Uploads/tai-nghe-bluetooth-toi--gia-re-hoco-es36-ha-noi-hcm.jpg"
+        alt="Phụ kiện"
+        loading="lazy"
+      />
+    </div>
+    <div class="cat-card-body">
+      <h3>Phụ kiện</h3>
+      <p>Sạc, âm thanh BLT, thiết bị đi kèm</p>
+      <button type="button" class="cat-link" (click)="filterAccessories()">Xem ngay →</button>
+    </div>
+  </article>
 </section>
 
 <div class="catalog-toolbar">
@@ -79,83 +87,40 @@
 
 <div class="filter-backdrop" *ngIf="filterOpen" (click)="closeFilter()"></div>
 
-<div class="products-page">
-  <aside class="filter-sidebar" [class.open]="filterOpen">
-    <div class="filter-header">
-      <h3>Lọc sản phẩm</h3>
-      <button class="btn-clear" type="button" (click)="clearFilters()" *ngIf="hasActiveFilters">Xóa lọc</button>
-      <button class="btn-close-filter" type="button" (click)="closeFilter()">Đóng</button>
-    </div>
-
-    <div class="filter-body">
-    <div class="filter-group">
-      <label class="filter-title">Danh mục</label>
-      <div class="filter-options">
-        <label class="filter-option">
-          <input type="radio" name="category" value="" (change)="selectedCategory = ''; applyFilters()" [checked]="!selectedCategory" />
-          <span>Tất cả</span>
-        </label>
-        <label class="filter-option" *ngFor="let cat of categories">
-          <input type="radio" name="category" [value]="cat.id" (change)="selectedCategory = cat.id; applyFilters()" [checked]="selectedCategory === cat.id" />
-          <span>{{ cat.name }}</span>
-        </label>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-title">Hãng</label>
-      <div class="filter-options">
-        <label class="filter-option" *ngFor="let brand of brands">
-          <input type="checkbox" [value]="brand" (change)="onBrandChange(brand, $any($event.target).checked)" [checked]="selectedBrand === brand" />
-          <span>{{ brand }}</span>
-        </label>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-title">Giá</label>
-      <div class="filter-price">
-        <div class="price-input">
-          <label>Từ</label>
-          <input type="number" [(ngModel)]="priceRange.min" (change)="onPriceChange()" />
-        </div>
-        <div class="price-input">
-          <label>Đến</label>
-          <input type="number" [(ngModel)]="priceRange.max" (change)="onPriceChange()" />
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-group desktop-sort">
-      <label class="filter-title">Sắp xếp</label>
-      <select [(ngModel)]="sortBy" (change)="onSortChange()">
-        <option value="newest">Mới nhất</option>
-        <option value="price-asc">Giá thấp đến cao</option>
-        <option value="price-desc">Giá cao đến thấp</option>
-        <option value="name">Theo tên (A-Z)</option>
-      </select>
-    </div>
-    </div>
-
-    <button type="button" class="btn-primary btn-apply-filter" (click)="closeFilter()">Xem sản phẩm</button>
-  </aside>
-
+<div class="products-page" id="featured-products">
   <main class="products-main">
-    <h2 class="section-title">Sản phẩm ( {{ products.length }} kết quả )</h2>
+    <div class="products-head">
+      <h2 class="section-title">Sản phẩm nổi bật <span class="result-count">({{ products.length }})</span></h2>
+      <div class="products-controls">
+        <div class="filter-pills">
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="!selectedBrand"
+            (click)="selectedBrand=''; applyFilters()"
+          >Tất cả</button>
+          <button
+            type="button"
+            class="filter-pill"
+            *ngFor="let brand of brands"
+            [class.active]="selectedBrand === brand"
+            (click)="selectedBrand=brand; applyFilters()"
+          >{{ brand }}</button>
+        </div>
+        <div class="sort-wrap desktop-sort-top">
+          <label for="sortByTop">Sắp xếp</label>
+          <select id="sortByTop" [(ngModel)]="sortBy" (change)="onSortChange()" aria-label="Sắp xếp">
+            <option value="newest">Mới nhất</option>
+            <option value="price-asc">Giá thấp đến cao</option>
+            <option value="price-desc">Giá cao đến thấp</option>
+            <option value="name">Theo tên (A-Z)</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
-    <div *ngIf="groupedProducts.length; else empty">
-      <section class="category-row" *ngFor="let group of groupedProducts">
-        <div class="category-row-head">
-          <h3>{{ group.name }}</h3>
-          <div class="row-navs">
-            <button type="button" (click)="scrollGroup(group.key, -1)" aria-label="Trước">‹</button>
-            <button type="button" (click)="scrollGroup(group.key, 1)" aria-label="Sau">›</button>
-          </div>
-        </div>
-        <div class="category-row-track" [attr.data-row]="group.key">
-          <app-product-card *ngFor="let p of group.products" [product]="p"></app-product-card>
-        </div>
-      </section>
+    <div class="product-grid" *ngIf="products.length; else empty">
+      <app-product-card *ngFor="let p of products" [product]="p"></app-product-card>
     </div>
 
     <ng-template #empty>
@@ -167,4 +132,119 @@
 
     <div class="loading" *ngIf="isLoading">Đang tải...</div>
   </main>
+
+  <aside class="filter-sidebar" [class.open]="filterOpen">
+    <div class="filter-header">
+      <h3>Bộ lọc sản phẩm</h3>
+      <button class="btn-clear" type="button" (click)="clearFilters()" *ngIf="hasActiveFilters">Xóa lọc</button>
+      <button class="btn-close-filter" type="button" (click)="closeFilter()">Đóng</button>
+    </div>
+
+    <div class="filter-body">
+      <div class="filter-group">
+        <label class="filter-title">Điện thoại</label>
+        <div class="filter-options">
+          <label class="filter-option">
+            <input
+              type="radio"
+              name="category"
+              value=""
+              (change)="selectedCategory = ''; selectedGroup = ''; applyFilters()"
+              [checked]="!selectedCategory && !selectedGroup"
+            />
+            <span>Tất cả</span>
+          </label>
+          <label class="filter-option" *ngFor="let cat of phoneCategories">
+            <input
+              type="radio"
+              name="category"
+              [value]="cat.id"
+              (change)="onCategorySelect(cat.id)"
+              [checked]="selectedCategory === cat.id && !selectedGroup"
+            />
+            <span>{{ cat.name }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-group" *ngIf="accessoryCategories.length">
+        <label class="filter-title">Phụ kiện</label>
+        <div class="filter-options">
+          <label class="filter-option">
+            <input
+              type="radio"
+              name="category"
+              value="group-accessory"
+              (change)="selectedCategory = ''; selectedGroup = 'accessory'; applyFilters()"
+              [checked]="selectedGroup === 'accessory'"
+            />
+            <span>Tất cả phụ kiện</span>
+          </label>
+          <label class="filter-option" *ngFor="let cat of accessoryCategories">
+            <input
+              type="radio"
+              name="category"
+              [value]="cat.id"
+              (change)="onCategorySelect(cat.id)"
+              [checked]="selectedCategory === cat.id && !selectedGroup"
+            />
+            <span>{{ cat.name }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-title">Thương hiệu</label>
+        <div class="filter-options">
+          <label class="filter-option" *ngFor="let brand of visibleBrands">
+            <input type="checkbox" [value]="brand" (change)="onBrandChange(brand, $any($event.target).checked)" [checked]="selectedBrand === brand" />
+            <span>{{ brand }}</span>
+          </label>
+        </div>
+        <button
+          type="button"
+          class="btn-show-more"
+          *ngIf="brands.length > brandPreviewCount"
+          (click)="brandsExpanded = !brandsExpanded"
+        >{{ brandsExpanded ? 'Thu gọn' : 'Hiển thị thêm' }}</button>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-title">Khoảng giá</label>
+        <div class="filter-price">
+          <div class="price-input">
+            <label>Từ</label>
+            <input type="number" [(ngModel)]="priceRange.min" (change)="onPriceChange()" />
+          </div>
+          <div class="price-input">
+            <label>Đến</label>
+            <input type="number" [(ngModel)]="priceRange.max" (change)="onPriceChange()" />
+          </div>
+        </div>
+        <input
+          class="price-range"
+          type="range"
+          min="0"
+          max="100000000"
+          step="500000"
+          [ngModel]="priceRange.max"
+          (ngModelChange)="priceRange.max = $event; onPriceChange()"
+          aria-label="Giá tối đa"
+        />
+      </div>
+
+      <div class="filter-group desktop-sort">
+        <label class="filter-title">Sắp xếp</label>
+        <select [(ngModel)]="sortBy" (change)="onSortChange()">
+          <option value="newest">Mới nhất</option>
+          <option value="price-asc">Giá thấp đến cao</option>
+          <option value="price-desc">Giá cao đến thấp</option>
+          <option value="name">Theo tên (A-Z)</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="button" class="btn-outline btn-clear-filters" (click)="clearFilters()" *ngIf="hasActiveFilters">Xóa bộ lọc</button>
+    <button type="button" class="btn-primary btn-apply-filter" (click)="closeFilter()">Xem sản phẩm</button>
+  </aside>
 </div>

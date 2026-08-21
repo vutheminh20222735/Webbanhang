@@ -11,7 +11,10 @@ import { WishlistService } from '../../core/services/wishlist.service';
     <header class="shop-header" [class.menu-open]="menuOpen">
       <div class="shop-header-top">
         <div class="shop-header-inner">
-          <a routerLink="/" class="logo" (click)="closeMenu()">Phone<span>Shop</span></a>
+          <a routerLink="/" class="logo" (click)="closeMenu()">
+            <span class="logo-icon" aria-hidden="true">📱</span>
+            Phone<span>Shop</span>
+          </a>
           <form class="header-search" (submit)="search($event)">
             <input name="q" [(ngModel)]="searchText" placeholder="Bạn tìm gì..." autocomplete="off" />
             <button type="submit" aria-label="Tìm kiếm">⌕</button>
@@ -19,6 +22,7 @@ import { WishlistService } from '../../core/services/wishlist.service';
           <div class="shop-actions desktop-only">
             <a *ngIf="!loggedIn" routerLink="/login" class="header-link">Đăng nhập</a>
             <a *ngIf="loggedIn" routerLink="/account/profile" class="header-link">Tài khoản</a>
+            <a routerLink="/wishlist" class="header-link">Yêu thích</a>
             <a routerLink="/cart" class="header-link nav-cart">
               Giỏ hàng
               <span class="cart-badge" *ngIf="(cart.count$ | async) as n">{{ n }}</span>
@@ -51,24 +55,42 @@ import { WishlistService } from '../../core/services/wishlist.service';
     </header>
     <div class="shop-header-spacer" aria-hidden="true"></div>
     <div class="store-wrap">
-      <aside class="side-ad side-ad--left" aria-hidden="true">
-        <div class="side-ad-card">
-          <strong>LAPTOP TỰU TRƯỜNG</strong>
-          <span>Tặng Microsoft Office</span>
-          <em>Tân sinh viên giảm thêm</em>
-        </div>
-      </aside>
       <main class="shop-main" (click)="closeMenu()">
         <router-outlet></router-outlet>
       </main>
-      <aside class="side-ad side-ad--right" aria-hidden="true">
-        <div class="side-ad-card">
-          <strong>LAPTOP TỰU TRƯỜNG</strong>
-          <span>Tặng Microsoft Office</span>
-          <em>Tân sinh viên giảm thêm</em>
-        </div>
-      </aside>
     </div>
+    <section class="shop-usp" aria-label="Cam kết dịch vụ">
+      <div class="shop-usp-inner">
+        <div class="usp-item">
+          <span class="usp-icon" aria-hidden="true">✓</span>
+          <div>
+            <strong>Hàng chính hãng</strong>
+            <span>100% chính hãng, hóa đơn đầy đủ</span>
+          </div>
+        </div>
+        <div class="usp-item">
+          <span class="usp-icon" aria-hidden="true">🛡</span>
+          <div>
+            <strong>Bảo hành uy tín</strong>
+            <span>Bảo hành chính hãng 12 tháng</span>
+          </div>
+        </div>
+        <div class="usp-item">
+          <span class="usp-icon" aria-hidden="true">🚚</span>
+          <div>
+            <strong>Giao hàng nhanh</strong>
+            <span>Giao toàn quốc, nhanh trong 2H</span>
+          </div>
+        </div>
+        <div class="usp-item">
+          <span class="usp-icon" aria-hidden="true">💳</span>
+          <div>
+            <strong>Thanh toán dễ dàng</strong>
+            <span>COD, thẻ, ví điện tử</span>
+          </div>
+        </div>
+      </div>
+    </section>
     <footer class="shop-footer">
       <p>PhoneShop — Cửa hàng điện thoại chính hãng</p>
       <p>Hotline: 1900 0000 · Hà Nội</p>

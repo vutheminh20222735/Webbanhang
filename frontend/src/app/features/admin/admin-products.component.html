@@ -1,59 +1,103 @@
 <div class="admin-card" *ngIf="canCreate">
-  <h3>Thêm điện thoại</h3>
-  <p class="muted">Chỉ Admin và Manager được thêm sản phẩm.</p>
+  <h3>Thêm sản phẩm</h3>
+  <p class="muted">Admin/Manager có thể thêm điện thoại hoặc phụ kiện.</p>
   <form class="product-form" (submit)="create($event)">
+    <div class="type-tabs">
+      <label class="type-tab" [class.active]="createType === 'phone'">
+        <input type="radio" name="productType" value="phone" [(ngModel)]="createType" />
+        Điện thoại
+      </label>
+      <label class="type-tab" [class.active]="createType === 'accessory'">
+        <input type="radio" name="productType" value="accessory" [(ngModel)]="createType" />
+        Phụ kiện
+      </label>
+    </div>
     <div class="form-grid">
-      <input name="name" placeholder="Tên máy (vd: iPhone 16 128GB)" required />
-      <input name="brand" placeholder="Hãng (Apple, Samsung...)" required />
+      <input name="name" [placeholder]="createType === 'accessory' ? 'Tên phụ kiện (vd: Cốc sạc 20W)' : 'Tên máy (vd: iPhone 16 128GB)'" required />
+      <input name="brand" placeholder="Hãng (Apple, Samsung, Anker...)" required />
       <input name="price" type="number" placeholder="Giá (VNĐ)" required />
       <input name="salePrice" type="number" placeholder="Giá khuyến mãi (tuỳ chọn)" />
       <input name="stock" type="number" placeholder="Tồn kho" value="10" />
-      <select name="category">
-        <option value="">-- Loại --</option>
-        <option *ngFor="let c of categories" [value]="c._id">{{c.name}}</option>
+      <select name="category" required>
+        <option value="">-- Danh mục --</option>
+        <optgroup label="Điện thoại" *ngIf="phoneCategories.length">
+          <option *ngFor="let c of phoneCategories" [value]="c._id">{{ c.name }}</option>
+        </optgroup>
+        <optgroup label="Phụ kiện" *ngIf="accessoryCategories.length">
+          <option *ngFor="let c of accessoryCategories" [value]="c._id">{{ c.name }}</option>
+        </optgroup>
       </select>
-      <input name="ram" placeholder="RAM (8GB)" />
-      <input name="storage" placeholder="Bộ nhớ (256GB)" />
-      <input name="color" placeholder="Màu" />
-      <input name="screen" placeholder="Màn hình" />
-      <input name="cpu" placeholder="Chip" />
-      <input name="camera" placeholder="Camera" />
-      <input name="battery" placeholder="Pin" />
-      <input name="operatingSystem" placeholder="Hệ điều hành" />
+      <ng-container *ngIf="createType === 'phone'">
+        <input name="ram" placeholder="RAM (8GB)" />
+        <input name="storage" placeholder="Bộ nhớ (256GB)" />
+        <input name="color" placeholder="Màu" />
+        <input name="screen" placeholder="Màn hình" />
+        <input name="cpu" placeholder="Chip" />
+        <input name="camera" placeholder="Camera" />
+        <input name="battery" placeholder="Pin" />
+        <input name="operatingSystem" placeholder="Hệ điều hành" />
+      </ng-container>
+      <ng-container *ngIf="createType === 'accessory'">
+        <input name="color" placeholder="Màu / biến thể" />
+        <input name="battery" placeholder="Dung lượng pin (nếu có)" />
+        <input name="storage" placeholder="Thông số khác (tuỳ chọn)" />
+      </ng-container>
     </div>
     <input name="imageUrl" placeholder="Link ảnh (https://...)" />
     <textarea name="description" placeholder="Mô tả sản phẩm" rows="3"></textarea>
     <p class="error" *ngIf="error">{{error}}</p>
     <p class="ok" *ngIf="ok">{{ok}}</p>
-    <button class="btn-primary" type="submit">Thêm điện thoại</button>
+    <button class="btn-primary" type="submit">{{ createType === 'accessory' ? 'Thêm phụ kiện' : 'Thêm điện thoại' }}</button>
   </form>
 </div>
 
 <div class="admin-card edit-card" id="edit-phone-card" *ngIf="editing && canUpdate">
   <div class="edit-head">
-    <h3>Sửa thông tin điện thoại</h3>
+    <h3>Sửa thông tin sản phẩm</h3>
     <button type="button" class="btn-ghost-dark" (click)="cancelEdit()">Đóng</button>
   </div>
-  <p class="muted">Cập nhật tên, giá, thông số kỹ thuật. Dữ liệu lưu vào hệ thống ngay khi bấm Lưu.</p>
+  <p class="muted">Cập nhật tên, giá, danh mục. Dữ liệu lưu ngay khi bấm Lưu.</p>
   <form class="product-form" (submit)="saveEdit($event)">
+    <div class="type-tabs">
+      <label class="type-tab" [class.active]="editing.productType === 'phone'">
+        <input type="radio" name="edit_productType" value="phone" [(ngModel)]="editing.productType" />
+        Điện thoại
+      </label>
+      <label class="type-tab" [class.active]="editing.productType === 'accessory'">
+        <input type="radio" name="edit_productType" value="accessory" [(ngModel)]="editing.productType" />
+        Phụ kiện
+      </label>
+    </div>
     <div class="form-grid">
-      <input [(ngModel)]="editing.name" name="edit_name" placeholder="Tên máy" required />
+      <input [(ngModel)]="editing.name" name="edit_name" placeholder="Tên sản phẩm" required />
       <input [(ngModel)]="editing.brand" name="edit_brand" placeholder="Hãng" required />
       <input [(ngModel)]="editing.price" name="edit_price" type="number" placeholder="Giá (VNĐ)" required />
       <input [(ngModel)]="editing.salePrice" name="edit_salePrice" type="number" placeholder="Giá khuyến mãi" />
       <input [(ngModel)]="editing.stock" name="edit_stock" type="number" placeholder="Tồn kho" />
       <select [(ngModel)]="editing.category" name="edit_category">
-        <option value="">-- Loại --</option>
-        <option *ngFor="let c of categories" [value]="c._id">{{c.name}}</option>
+        <option value="">-- Danh mục --</option>
+        <optgroup label="Điện thoại" *ngIf="phoneCategories.length">
+          <option *ngFor="let c of phoneCategories" [value]="c._id">{{ c.name }}</option>
+        </optgroup>
+        <optgroup label="Phụ kiện" *ngIf="accessoryCategories.length">
+          <option *ngFor="let c of accessoryCategories" [value]="c._id">{{ c.name }}</option>
+        </optgroup>
       </select>
-      <input [(ngModel)]="editing.ram" name="edit_ram" placeholder="RAM" />
-      <input [(ngModel)]="editing.storage" name="edit_storage" placeholder="Bộ nhớ" />
-      <input [(ngModel)]="editing.color" name="edit_color" placeholder="Màu" />
-      <input [(ngModel)]="editing.screen" name="edit_screen" placeholder="Màn hình" />
-      <input [(ngModel)]="editing.cpu" name="edit_cpu" placeholder="Chip" />
-      <input [(ngModel)]="editing.camera" name="edit_camera" placeholder="Camera" />
-      <input [(ngModel)]="editing.battery" name="edit_battery" placeholder="Pin" />
-      <input [(ngModel)]="editing.operatingSystem" name="edit_os" placeholder="Hệ điều hành" />
+      <ng-container *ngIf="editing.productType !== 'accessory'">
+        <input [(ngModel)]="editing.ram" name="edit_ram" placeholder="RAM" />
+        <input [(ngModel)]="editing.storage" name="edit_storage" placeholder="Bộ nhớ" />
+        <input [(ngModel)]="editing.color" name="edit_color" placeholder="Màu" />
+        <input [(ngModel)]="editing.screen" name="edit_screen" placeholder="Màn hình" />
+        <input [(ngModel)]="editing.cpu" name="edit_cpu" placeholder="Chip" />
+        <input [(ngModel)]="editing.camera" name="edit_camera" placeholder="Camera" />
+        <input [(ngModel)]="editing.battery" name="edit_battery" placeholder="Pin" />
+        <input [(ngModel)]="editing.operatingSystem" name="edit_os" placeholder="Hệ điều hành" />
+      </ng-container>
+      <ng-container *ngIf="editing.productType === 'accessory'">
+        <input [(ngModel)]="editing.color" name="edit_color" placeholder="Màu / biến thể" />
+        <input [(ngModel)]="editing.battery" name="edit_battery" placeholder="Dung lượng pin (nếu có)" />
+        <input [(ngModel)]="editing.storage" name="edit_storage" placeholder="Thông số khác" />
+      </ng-container>
       <select [(ngModel)]="editing.status" name="edit_status">
         <option value="active">Đang bán</option>
         <option value="inactive">Ngừng bán</option>
@@ -75,11 +119,19 @@
 </div>
 
 <div class="admin-card">
-  <h3>Sản phẩm</h3>
+  <div class="list-head">
+    <h3>Sản phẩm</h3>
+    <div class="list-filters">
+      <button type="button" class="pill" [class.active]="listFilter === 'all'" (click)="listFilter = 'all'">Tất cả</button>
+      <button type="button" class="pill" [class.active]="listFilter === 'phone'" (click)="listFilter = 'phone'">Điện thoại</button>
+      <button type="button" class="pill" [class.active]="listFilter === 'accessory'" (click)="listFilter = 'accessory'">Phụ kiện</button>
+    </div>
+  </div>
   <table class="admin-table">
-    <tr><th>Tên</th><th>Hãng</th><th>Giá</th><th>Tồn</th><th></th></tr>
-    <tr *ngFor="let p of products" [class.is-editing]="editing?._id === p._id">
+    <tr><th>Tên</th><th>Loại</th><th>Hãng</th><th>Giá</th><th>Tồn</th><th></th></tr>
+    <tr *ngFor="let p of filteredProducts" [class.is-editing]="editing?._id === p._id">
       <td>{{p.name}}</td>
+      <td><span class="type-badge" [class.acc]="isAccessory(p)">{{ isAccessory(p) ? 'Phụ kiện' : 'Điện thoại' }}</span></td>
       <td>{{p.brand}}</td>
       <td>{{ p.price | number:'1.0-0' }}₫</td>
       <td>{{p.stock}}</td>

@@ -16,18 +16,44 @@ export class AdminProductsComponent implements OnInit {
   editOk = '';
   editing: any = null;
   saving = false;
+  createType: 'phone' | 'accessory' = 'phone';
+  listFilter: 'all' | 'phone' | 'accessory' = 'all';
 
   constructor(private http: HttpClient, public auth: AuthService) {}
   get canCreate() { return this.auth.hasRole('ADMIN', 'MANAGER'); }
   get canUpdate() { return this.auth.hasRole('ADMIN', 'MANAGER'); }
 
+  get phoneCategories() {
+    return this.categories.filter((c) => (c.group || 'phone') === 'phone');
+  }
+
+  get accessoryCategories() {
+    return this.categories.filter((c) => c.group === 'accessory');
+  }
+
+  get filteredProducts() {
+    if (this.listFilter === 'all') return this.products;
+    return this.products.filter((p) => this.isAccessory(p) === (this.listFilter === 'accessory'));
+  }
+
   ngOnInit() {
     this.load();
-    this.http.get(`${environment.apiUrl}/products/categories`).subscribe((res: any) => this.categories = res.data || []);
+    this.http.get(`${environment.apiUrl}/products/categories`).subscribe((res: any) => {
+      this.categories = res.data || [];
+    });
   }
 
   load() {
-    this.http.get(`${environment.apiUrl}/products`, { params: { limit: 100 } }).subscribe((res: any) => this.products = res.data?.items || []);
+    this.http.get(`${environment.apiUrl}/products`, { params: { limit: 200 } }).subscribe((res: any) => {
+      this.products = res.data?.items || [];
+    });
+  }
+
+  isAccessory(p: any): boolean {
+    if (p?.productType === 'accessory') return true;
+    if (p?.productType === 'phone') return false;
+    const id = this.categoryId(p);
+    return this.accessoryCategories.some((c) => String(c._id) === id);
   }
 
   categoryId(p: any): string {
@@ -49,10 +75,12 @@ export class AdminProductsComponent implements OnInit {
     body.price = Number(body.price);
     if (body.salePrice) body.salePrice = Number(body.salePrice);
     body.stock = Number(body.stock || 0);
+    body.productType = this.createType;
     if (body.imageUrl) body.images = [body.imageUrl];
     this.http.post(`${environment.apiUrl}/products`, body).subscribe(() => {
-      this.ok = 'Đã thêm điện thoại';
+      this.ok = this.createType === 'accessory' ? 'Đã thêm phụ kiện' : 'Đã thêm điện thoại';
       (e.target as HTMLFormElement).reset();
+      this.createType = 'phone';
       this.load();
     }, err => this.error = err.error?.message || 'Không thêm được (cần quyền Admin/Manager)');
   }
@@ -69,6 +97,7 @@ export class AdminProductsComponent implements OnInit {
       salePrice: p.salePrice ?? '',
       stock: p.stock ?? 0,
       category: this.categoryId(p),
+      productType: this.isAccessory(p) ? 'accessory' : 'phone',
       ram: p.ram || '',
       storage: p.storage || '',
       color: p.color || '',
@@ -105,6 +134,7 @@ export class AdminProductsComponent implements OnInit {
       brand: this.editing.brand,
       price: Number(this.editing.price),
       stock: Number(this.editing.stock || 0),
+      productType: this.editing.productType || 'phone',
       ram: this.editing.ram || '',
       storage: this.editing.storage || '',
       color: this.editing.color || '',
@@ -127,7 +157,7 @@ export class AdminProductsComponent implements OnInit {
 
     this.http.put(`${environment.apiUrl}/products/${this.editing._id}`, body).subscribe({
       next: () => {
-        this.editOk = 'Đã cập nhật thông tin điện thoại';
+        this.editOk = 'Đã cập nhật thông tin sản phẩm';
         this.saving = false;
         this.load();
       },

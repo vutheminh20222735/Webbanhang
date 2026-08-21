@@ -6,6 +6,8 @@ const productSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   brand: { type: String },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  /** phone | accessory */
+  productType: { type: String, enum: ['phone', 'accessory'], default: 'phone' },
   description: { type: String },
   price: { type: Number, required: true },
   salePrice: { type: Number },
