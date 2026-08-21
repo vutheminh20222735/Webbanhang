@@ -8,8 +8,8 @@
   >{{ wished ? '♥' : '♡' }}</button>
 
   <a [routerLink]="['/product', product._id]" class="thumb">
-    <img [src]="image" [alt]="product.name" />
     <span class="stock-badge" [class.soldout]="outOfStock">{{ outOfStock ? 'Hết hàng' : 'Còn hàng' }}</span>
+    <img [src]="image" [alt]="product.name" />
   </a>
 
   <div class="info">
@@ -24,9 +24,17 @@
       <span class="discount" *ngIf="discount">-{{ discount }}%</span>
     </div>
     <div class="card-actions">
-      <a class="btn-outline" [routerLink]="['/product', product._id]">Xem chi tiết</a>
-      <button type="button" class="btn-primary" [disabled]="outOfStock || adding" (click)="addToCart($event)">
-        {{ added ? 'Đã thêm' : (outOfStock ? 'Hết hàng' : 'Thêm giỏ') }}
+      <a class="btn-outline btn-detail" [routerLink]="['/product', product._id]">Xem chi tiết</a>
+      <button
+        type="button"
+        class="btn-cart"
+        [disabled]="outOfStock || adding"
+        (click)="addToCart($event)"
+        [attr.aria-label]="added ? 'Đã thêm' : (outOfStock ? 'Hết hàng' : 'Thêm giỏ')"
+        [title]="added ? 'Đã thêm' : (outOfStock ? 'Hết hàng' : 'Thêm giỏ')"
+      >
+        <span *ngIf="!added">🛒</span>
+        <span *ngIf="added">✓</span>
       </button>
     </div>
   </div>

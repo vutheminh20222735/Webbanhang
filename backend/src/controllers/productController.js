@@ -24,7 +24,7 @@ exports.createProduct = async (req, res, next) => {
   try {
     const body = req.body || {};
     if (!body.name || body.price === undefined || body.price === '') {
-      return res.status(400).json({ success: false, message: 'Cần tên và giá điện thoại' });
+      return res.status(400).json({ success: false, message: 'Cần tên và giá sản phẩm' });
     }
     const files = req.files || [];
     const images = [];
@@ -38,11 +38,13 @@ exports.createProduct = async (req, res, next) => {
     }
     if (body.imageUrl) images.push(body.imageUrl);
     const extra = Array.isArray(body.images) ? body.images : (body.images ? [body.images] : []);
+    const productType = body.productType === 'accessory' ? 'accessory' : 'phone';
     const data = {
       name: body.name,
       slug: await uniqueSlug(body.slug ? slugify(body.slug) : slugify(body.name)),
       brand: body.brand || '',
       category: body.category || undefined,
+      productType,
       description: body.description || '',
       price: Number(body.price),
       salePrice: body.salePrice ? Number(body.salePrice) : null,
@@ -54,7 +56,7 @@ exports.createProduct = async (req, res, next) => {
       cpu: body.cpu || '',
       camera: body.camera || '',
       battery: body.battery || '',
-      operatingSystem: body.operatingSystem || 'Android',
+      operatingSystem: body.operatingSystem || (productType === 'accessory' ? '' : 'Android'),
       stock: Number(body.stock || 0),
       featured: body.featured === true || body.featured === 'true',
       status: 'active'
@@ -68,7 +70,7 @@ exports.createProduct = async (req, res, next) => {
 
 exports.listCategories = async (req, res, next) => {
   try {
-    const items = await Category.find().sort({ name: 1 });
+    const items = await Category.find().sort({ group: 1, sortOrder: 1, name: 1 });
     res.json({ success: true, data: items });
   } catch (err) { next(err); }
 };
